@@ -31,14 +31,21 @@ namespace CarDriveSimulator
         {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.ToolStripMenuItem_New = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolStripMenuItem_Edit = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItem_Open = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItem_Save = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItem_SaveAs = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItem_EditMode = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.ToolStripMenuItem_Debug = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStrip2 = new System.Windows.Forms.ToolStrip();
+            this.ToolStripMenuItem_LoadModel = new System.Windows.Forms.ToolStripMenuItem();
+            this.panelDraw = new System.Windows.Forms.Panel();
+            this.pictureBoxDraw = new System.Windows.Forms.PictureBox();
+            this.panelDebugInfo = new System.Windows.Forms.Panel();
+            this.labelDebugInfo = new System.Windows.Forms.Label();
+            this.ToolStripMenuItem_Edit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
+            this.panelDraw.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxDraw)).BeginInit();
+            this.panelDebugInfo.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -46,14 +53,16 @@ namespace CarDriveSimulator
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolStripMenuItem_New,
-            this.ToolStripMenuItem_Edit,
+            this.ToolStripMenuItem_Open,
             this.ToolStripMenuItem_Save,
             this.ToolStripMenuItem_SaveAs,
             this.ToolStripMenuItem_EditMode,
-            this.ToolStripMenuItem_Debug});
+            this.ToolStripMenuItem_Debug,
+            this.ToolStripMenuItem_LoadModel,
+            this.ToolStripMenuItem_Edit});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1656, 40);
+            this.menuStrip1.Size = new System.Drawing.Size(1656, 42);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -64,12 +73,12 @@ namespace CarDriveSimulator
             this.ToolStripMenuItem_New.Text = "New";
             this.ToolStripMenuItem_New.Click += new System.EventHandler(this.ToolStripMenuItem_New_Click);
             // 
-            // ToolStripMenuItem_Edit
+            // ToolStripMenuItem_Open
             // 
-            this.ToolStripMenuItem_Edit.Name = "ToolStripMenuItem_Edit";
-            this.ToolStripMenuItem_Edit.Size = new System.Drawing.Size(93, 38);
-            this.ToolStripMenuItem_Edit.Text = "Open";
-            this.ToolStripMenuItem_Edit.Click += new System.EventHandler(this.ToolStripMenuItem_Edit_Click);
+            this.ToolStripMenuItem_Open.Name = "ToolStripMenuItem_Open";
+            this.ToolStripMenuItem_Open.Size = new System.Drawing.Size(93, 38);
+            this.ToolStripMenuItem_Open.Text = "Open";
+            this.ToolStripMenuItem_Open.Click += new System.EventHandler(this.ToolStripMenuItem_Open_Click);
             // 
             // ToolStripMenuItem_Save
             // 
@@ -92,43 +101,85 @@ namespace CarDriveSimulator
             this.ToolStripMenuItem_EditMode.Text = "Edit Mode";
             this.ToolStripMenuItem_EditMode.Click += new System.EventHandler(this.ToolStripMenuItem_EditMode_Click);
             // 
-            // toolStrip1
-            // 
-            this.toolStrip1.ImageScalingSize = new System.Drawing.Size(32, 32);
-            this.toolStrip1.Location = new System.Drawing.Point(0, 40);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(1656, 25);
-            this.toolStrip1.TabIndex = 1;
-            this.toolStrip1.Text = "toolStrip1";
-            // 
             // ToolStripMenuItem_Debug
             // 
             this.ToolStripMenuItem_Debug.Name = "ToolStripMenuItem_Debug";
             this.ToolStripMenuItem_Debug.Size = new System.Drawing.Size(106, 38);
             this.ToolStripMenuItem_Debug.Text = "Debug";
             // 
-            // toolStrip2
+            // ToolStripMenuItem_LoadModel
             // 
-            this.toolStrip2.ImageScalingSize = new System.Drawing.Size(32, 32);
-            this.toolStrip2.Location = new System.Drawing.Point(0, 65);
-            this.toolStrip2.Name = "toolStrip2";
-            this.toolStrip2.Size = new System.Drawing.Size(1656, 25);
-            this.toolStrip2.TabIndex = 2;
-            this.toolStrip2.Text = "toolStrip2";
+            this.ToolStripMenuItem_LoadModel.Name = "ToolStripMenuItem_LoadModel";
+            this.ToolStripMenuItem_LoadModel.Size = new System.Drawing.Size(161, 38);
+            this.ToolStripMenuItem_LoadModel.Text = "Load Model";
+            // 
+            // panelDraw
+            // 
+            this.panelDraw.Controls.Add(this.pictureBoxDraw);
+            this.panelDraw.Location = new System.Drawing.Point(0, 98);
+            this.panelDraw.Name = "panelDraw";
+            this.panelDraw.Size = new System.Drawing.Size(1656, 873);
+            this.panelDraw.TabIndex = 1;
+            // 
+            // pictureBoxDraw
+            // 
+            this.pictureBoxDraw.Location = new System.Drawing.Point(0, 0);
+            this.pictureBoxDraw.Name = "pictureBoxDraw";
+            this.pictureBoxDraw.Size = new System.Drawing.Size(1656, 866);
+            this.pictureBoxDraw.TabIndex = 0;
+            this.pictureBoxDraw.TabStop = false;
+            this.pictureBoxDraw.Click += new System.EventHandler(this.pictureBoxDraw_Click);
+            this.pictureBoxDraw.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBoxDraw_Paint);
+            this.pictureBoxDraw.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBoxDraw_MouseDown);
+            this.pictureBoxDraw.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxDraw_MouseMove);
+            this.pictureBoxDraw.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBoxDraw_MouseUp);
+            this.pictureBoxDraw.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.pictureBoxDraw_MouseWheel);
+            // 
+            // panelDebugInfo
+            // 
+            this.panelDebugInfo.Controls.Add(this.labelDebugInfo);
+            this.panelDebugInfo.Location = new System.Drawing.Point(0, 44);
+            this.panelDebugInfo.Name = "panelDebugInfo";
+            this.panelDebugInfo.Size = new System.Drawing.Size(1653, 51);
+            this.panelDebugInfo.TabIndex = 2;
+            // 
+            // labelDebugInfo
+            // 
+            this.labelDebugInfo.AutoSize = true;
+            this.labelDebugInfo.Location = new System.Drawing.Point(3, 10);
+            this.labelDebugInfo.Name = "labelDebugInfo";
+            this.labelDebugInfo.Size = new System.Drawing.Size(86, 32);
+            this.labelDebugInfo.TabIndex = 0;
+            this.labelDebugInfo.Text = "Debug";
+            // 
+            // ToolStripMenuItem_Edit
+            // 
+            this.ToolStripMenuItem_Edit.Name = "ToolStripMenuItem_Edit";
+            this.ToolStripMenuItem_Edit.Size = new System.Drawing.Size(74, 38);
+            this.ToolStripMenuItem_Edit.Text = "Edit";
+            this.ToolStripMenuItem_Edit.Click += new System.EventHandler(this.ToolStripMenuItem_Edit_Click);
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(13F, 32F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1656, 970);
-            this.Controls.Add(this.toolStrip2);
-            this.Controls.Add(this.toolStrip1);
+            this.Controls.Add(this.panelDebugInfo);
+            this.Controls.Add(this.panelDraw);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FormMain";
             this.Text = "Car Drive Simulator";
+            this.Load += new System.EventHandler(this.FormMain_Load);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.FormMain_Paint);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FormMain_KeyDown);
+            this.Resize += new System.EventHandler(this.FormMain_Resize);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.panelDraw.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxDraw)).EndInit();
+            this.panelDebugInfo.ResumeLayout(false);
+            this.panelDebugInfo.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -138,13 +189,17 @@ namespace CarDriveSimulator
 
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_New;
-        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_Edit;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_Open;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_Save;
-        private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_SaveAs;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_EditMode;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_Debug;
-        private System.Windows.Forms.ToolStrip toolStrip2;
+        private System.Windows.Forms.Panel panelDraw;
+        private System.Windows.Forms.PictureBox pictureBoxDraw;
+        private System.Windows.Forms.Panel panelDebugInfo;
+        private System.Windows.Forms.Label labelDebugInfo;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_LoadModel;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem_Edit;
     }
 }
 
