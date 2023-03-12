@@ -1,0 +1,106 @@
+*~
+_ReSharper*
+[Bb]in
+obj
+objd
+out/
+tmp/
+App_Data
+*.user
+*.sln.cache
+*.userosscache
+*.suo
+TestResults
+[Tt]humbs.db
+buildd.log
+buildd.evt
+buildd.dbb
+buildd.prf
+buildd.trc
+buildd.err
+build.log
+build.evt
+build.prf
+build.dbb
+build.trc
+build.err
+*.log
+*.bak
+OACRTemp/
+build_logs/
+lock
+/public/inc/bldver.*
+/public/inc/sources.ver
+/data
+*.projhash*
+*.slnhash*
+
+# quickbuild.exe
+/target/distrib/*
+/__cacheOutput/
+/VersionGeneration/
+/VersionGeneratingLogs/
+QLogs
+QLocal
+QTestLogs
+pingme.txt
+stderr.txt
+
+# bad tlb/chm generators in nmake tree
+*.tlb
+*.chm
+!/private/autopilot/SCPTool/*.chm
+
+# silverlight
+ClientBin/
+
+# azure
+*.build.csdef
+csx/
+/version
+/__cbcOutput/debug/amd64/private
+
+# storm
+__jar__/
+
+# kafka
+build/
+private/applications/RTCountingStatusMonitor/Logs/
+
+#Exclude nuget packages folders
+packages/
+#ignore envkeep.txt
+build/envkeep.txt
+*.pdb
+# *.bond
+
+
+# maven
+private/tools/apache-maven-3.0.4/
+pom.xml
+
+#Exclude nuget packages folders
+packages
+#ignore envkeep.txt
+build/envkeep.txt
+
+Logs
+
+*.VC.db
+*.vs/
+*target/
+*__pycache__/
+/private/ScpSchema/java/src/main/java/AdsSCP/UET
+/private/ScpSchema/java/src/main/java/AdsSCP/SearchAdsPageView.java
+/private/ScpSchema/java/src/main/java/AdsSCP/SearchAdsImpression.java
+/private/ScpSchema/java/src/main/java/AdsSCP/SearchAdsConversion.java
+/private/ScpSchema/java/src/main/java/AdsSCP/SearchAdsClick.java
+/private/ScpSchema/java/src/main/java/AdsSCP/NotDisplayedReason.java
+/private/ScpSchema/java/src/main/java/AdsSCP/ImpressionPageLevelData.java
+/private/ScpSchema/java/src/main/java/AdsSCP/ImpressionAdLevelData.java
+/private/ScpSchema/java/src/main/java/AdsSCP/FraudResult.java
+/private/ScpSchema/java/src/main/java/AdsSCP/DeviceTypeId.java
+/private/ScpSchema/java/src/main/java/AdsSCP/BaseImpressionPageLevelData.java
+/private/ScpSchema/java/src/main/java/AdsSCP/BaseImpressionAdLevelData.java
+/private/ScpSchema/java/src/main/java/AdsSCP/BaseImpression.java
+/private/ScpSchema/java/src/main/java/AdsSCP/AdBlock.java
