@@ -32,12 +32,12 @@ namespace CarDriveSimulator
     class ScenarioModel
     {
         public AxisModel Axis1 = new AxisModel { Display = true, Spacing = 100, PenModel = new PenModel(Color.LightGreen, 1) };
-        public AxisModel Axis2 = new AxisModel { Display = true, Spacing = 1000, PenModel = new PenModel(Color.Black, 2) };
+        public AxisModel Axis2 = new AxisModel { Display = true, Spacing = 1000, PenModel = new PenModel(Color.LightGray, 2) };
 
         public Point OriginalPointInDevicePoint = new Point(0, 0);
         public double Scale = 1; // DevicePoint = Scale * LogicPoint 
 
-        public List<VehicleModel> VehicleModels = new List<VehicleModel> { new VehicleModel() };
+        public List<VehicleModel> VehicleModels = new List<VehicleModel>();
 
         public static string SerializeToJson(ScenarioModel o)
         {
@@ -90,18 +90,46 @@ namespace CarDriveSimulator
         public int Wheel_L = 800;
         public int Wheel_W = 194;
 
+        public Point[] WheelRelativePositions
+        {
+            get
+            {
+                return new Point[] {
+                    new Point(-WheelTrack / 2,  Dimension_L / 2 - FrontOverhang),
+                    new Point( WheelTrack / 2,  Dimension_L / 2 - FrontOverhang),
+                    new Point( WheelTrack / 2, -(WheelBase - (Dimension_L / 2 - FrontOverhang))),
+                    new Point(-WheelTrack / 2, -(WheelBase - (Dimension_L / 2 - FrontOverhang)))};
+            }
+        }
+
         // Positions
         public Point Position = new Point(0, 0);
-        public int VehicleAngle = 0;
-        public int WheelAngle = 0;
+        public double VehicleAngle = 0;  // Here the Angle is from Y axis to right
+        public double WheelAngle = 0;
 
         // Draw Vehicle
         public PenModel PenBody = new PenModel(Color.Green, 5);
         public PenModel PenWheel = new PenModel(Color.Red, 3);
 
+        // Draw extention
+        public bool FrontBackExtionsionLine_Draw = true;
+        public int FrontBackExtionsionLine_Length = 10000;
+        public PenModel FrontBackExtionsionLine_Pen = new PenModel(Color.Yellow, 5);
+
+        public bool TurningRadius_Draw = true;
+        public PenModel TurningRadius_Pen = new PenModel(Color.Yellow, 5);
+        public Point TurningRadiusPoint = new Point(0, 0);
+
+        public bool GuideLine_Body_Draw = true;
+        public PenModel GuideLine_Body_Pen = new PenModel(Color.Green, 2);
+
+        public bool GuideLine_Wheel_Draw = false;
+        public PenModel GuideLine_Wheel_Pen = new PenModel(Color.Red, 2);
+
         public void Rotate(int vehicleAngleDelta, int wheelAngleDelta)
         {
             VehicleAngle += vehicleAngleDelta;
+
             WheelAngle += wheelAngleDelta;
             if (WheelAngle < -30)
             {
@@ -110,6 +138,31 @@ namespace CarDriveSimulator
             if (WheelAngle > 30)
             {
                 WheelAngle = 30;
+            }
+
+            /*
+             *  Wheel0    Wheel1
+             *  
+             *  
+             *           Length1          tan(wheel angle) = Length1 / Length2
+             *  
+             *  
+             *  Wheel3    Wheel2                Length2                              Turning Radius Point
+             */
+            var flag = 1;
+            var tmpWheelAngle = WheelAngle;
+            if (tmpWheelAngle < 0)
+            {
+                tmpWheelAngle = -tmpWheelAngle;
+                flag = -1;
+            }
+            if (tmpWheelAngle > 0)
+            {
+                var wheelPositions = WheelRelativePositions;
+                var y = wheelPositions[2].Y;
+                var length1 = wheelPositions[1].Y - wheelPositions[2].Y;
+                var length2 = length1 / Math.Tan(tmpWheelAngle * Math.PI / 180);
+                TurningRadiusPoint = new Point((int)(wheelPositions[2].X + length2) * flag, y);
             }
         }
     }

@@ -21,14 +21,6 @@ namespace CarDriveSimulator
 
         public FormMain()
         {
-            var o = new ScenarioModel();
-            o.Scale = 100.0;
-            var s = ScenarioModel.SerializeToJson(o);
-            Trace.WriteLine(s);
-
-            var o1 = ScenarioModel.DeserializeFromJson(s);
-            Trace.WriteLine(o1);
-
             CreateNewScenario();
 
             InitializeComponent();
@@ -111,6 +103,7 @@ namespace CarDriveSimulator
                 try
                 {
                     controller.UpdateScenarios(textBox.TextContent);
+                    pictureBoxDraw.Invalidate();
                 }
                 catch (Exception ex)
                 {
@@ -211,6 +204,10 @@ namespace CarDriveSimulator
             {
                 controller.CurrentMouseMode = GlobalController.MouseMode.MoveScreen;
             }
+            else if (e.Button == MouseButtons.Left)
+            {
+                controller.CurrentMouseMode = GlobalController.MouseMode.MoveSelectComponent;
+            }
             
             mouseEventArgs = e;
             Update_LabelDebugInfo();
@@ -239,7 +236,7 @@ namespace CarDriveSimulator
         private void pictureBoxDraw_MouseMove(object sender, MouseEventArgs e)
         {
             Update_EventMessage($"pictureBoxDraw_MouseMove");
-            controller.MoveOriginalPoint(new Size(e.Location.X - previousMousePoint.X, e.Location.Y - previousMousePoint.Y));
+            controller.MoveModel(new Size(e.Location.X - previousMousePoint.X, e.Location.Y - previousMousePoint.Y));
             previousMousePoint = e.Location;
             mouseEventArgs = e;
             Update_LabelDebugInfo();

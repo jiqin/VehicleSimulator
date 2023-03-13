@@ -36,6 +36,7 @@ namespace CarDriveSimulator
         public GlobalController()
         {
             this.ScenarioModel = new ScenarioModel();
+            this.ScenarioModel.VehicleModels.Add(new VehicleModel());
 
             Reset();
         }
@@ -54,7 +55,8 @@ namespace CarDriveSimulator
 
         public void UpdateScenarios(string value)
         {
-            this.ScenarioModel = ScenarioModel.DeserializeFromJson(value);
+            var m = ScenarioModel.DeserializeFromJson(value);
+            this.ScenarioModel = m;
         }
 
         public bool Save()
@@ -95,12 +97,42 @@ namespace CarDriveSimulator
             return CurrentEditMode;
         }
 
-        public void MoveOriginalPoint(Size devicePt)
+        public void MoveModel(Size devicePt)
         {
-            System.Diagnostics.Trace.WriteLine($"MoveOriginalPoint {CurrentMouseMode}, {devicePt}");
+            // System.Diagnostics.Trace.WriteLine($"MoveOriginalPoint {CurrentMouseMode}, {devicePt}");
             if (CurrentMouseMode == MouseMode.MoveScreen)
             {
                 ScenarioModel.OriginalPointInDevicePoint = ScenarioModel.OriginalPointInDevicePoint + devicePt;
+            }
+            else if (CurrentMouseMode == MouseMode.MoveSelectComponent)
+            {
+                // 判断2个向量夹角
+                // cos(ang) = ((x1 * x2) + (y1 * y2))
+                var logicLength = Math.Sqrt(Math.Pow(devicePt.Width, 2) + Math.Pow(devicePt.Height, 2)) / ScenarioModel.Scale;
+                foreach (var m in ScenarioModel.VehicleModels)
+                {
+                    var ang = m.VehicleAngle * Math.PI / 180;
+                    var flag = devicePt.Width * Math.Sin(ang) + (-devicePt.Height) * Math.Cos(ang) > 0 ? 1 : -1;
+
+                    if (m.WheelAngle == 0)
+                    {
+                        var xDelta = logicLength * Math.Sin(ang) * flag;
+                        var yDelta = logicLength * Math.Cos(ang) * flag;
+
+                        m.Position += new Size((int)(xDelta), (int)(yDelta));
+                    }
+                    else
+                    {
+                        var or = m.TurningRadiusPoint;
+                        var radium = Math.Sqrt(Math.Pow(or.X, 2) + Math.Pow(or.Y, 2));
+                        var rrang = Math.Asin(logicLength / radium) * 180 / Math.PI;
+
+                        or = RotatePoint(new Point(0, 0), or, m.VehicleAngle);
+                        or += new Size(m.Position);
+                        m.Position = RotatePoint(or, m.Position, rrang * flag);
+                        m.VehicleAngle += rrang * flag;
+                    }
+                }
             }
         }
 
@@ -166,25 +198,34 @@ namespace CarDriveSimulator
 
         public void DrawVehicle(Graphics g, VehicleModel m)
         {
+            Func<Point[], Point[]> RelativePointToRealPoints = (pts) =>
+            {
+                pts = RotateRectangle(pts, m.VehicleAngle);
+                pts = MoveRotate(pts, m.Position);
+                return pts;
+            };
+
+            Func<Point, Point> RelativePointToRealPoint = (pt) =>
+            {
+                var pts = new Point[] { pt };
+                pts = RotateRectangle(pts, m.VehicleAngle);
+                pts = MoveRotate(pts, m.Position);
+                return pts[0];
+            };
+
             // Draw body
             {
                 var pen = new Pen(m.PenBody.Color, m.PenBody.Width);
                 var body = GenerateRectanglePoints(m.Dimension_W, m.Dimension_L);
-                body = RotateRectangle(body, m.VehicleAngle);
-                body = MoveRotate(body, m.Position);
-                DrawLogicLines(g, pen, body);
+                DrawLogicLines(g, pen, RelativePointToRealPoints(body));
             }
 
             // Draw wheel
             {
                 var pen = new Pen(m.PenWheel.Color, m.PenWheel.Width);
-                var wheelPositions = new Point[] {
-                    new Point(-m.WheelTrack / 2,  m.Dimension_L / 2 - m.FrontOverhang),
-                    new Point( m.WheelTrack / 2,  m.Dimension_L / 2 - m.FrontOverhang),
-                    new Point( m.WheelTrack / 2, -(m.WheelBase - (m.Dimension_L / 2 - m.FrontOverhang))),
-                    new Point(-m.WheelTrack / 2, -(m.WheelBase - (m.Dimension_L / 2 - m.FrontOverhang)))};
+                var wheelPositions = m.WheelRelativePositions;
 
-                var wheelAngles = new int[] { m.WheelAngle, m.WheelAngle, 0, 0 }; // Only front wheels have angle.
+                var wheelAngles = new double[] { m.WheelAngle, m.WheelAngle, 0, 0 }; // Only front wheels have angle.
 
                 for (var i = 0; i < wheelPositions.Length; ++i)
                 {
@@ -193,9 +234,78 @@ namespace CarDriveSimulator
                     var wheel = GenerateRectanglePoints(m.Wheel_W, m.Wheel_L);
                     wheel = RotateRectangle(wheel, angle);
                     wheel = MoveRotate(wheel, pos);
-                    wheel = RotateRectangle(wheel, m.VehicleAngle);
-                    wheel = MoveRotate(wheel, m.Position);
-                    DrawLogicLines(g, pen, wheel);
+                    DrawLogicLines(g, pen, RelativePointToRealPoints(wheel));
+                }
+            }
+
+            // Draw Front Back Extionsion Line
+            {
+                if (m.FrontBackExtionsionLine_Draw)
+                {
+                    var pen = new Pen(m.FrontBackExtionsionLine_Pen.Color, m.FrontBackExtionsionLine_Pen.Width);
+                    var body = GenerateRectanglePoints(m.Dimension_W, m.Dimension_L);
+                    var extendDirection = new int[] { 1, 1, -1, -1, 1 };
+                    for (var i = 0; i < body.Length; ++i)
+                    {
+                        var pts = new Point[]
+                        {
+                            body[i],
+                            body[i] + new Size(0, m.FrontBackExtionsionLine_Length * extendDirection[i]),
+                        };
+                        DrawLogicLines(g, pen, RelativePointToRealPoints(pts));
+                    }
+                }
+            }
+
+            // Draw turning radius
+            {
+                if (m.TurningRadius_Draw && m.WheelAngle != 0)
+                {
+                    var pen = new Pen(m.TurningRadius_Pen.Color, m.TurningRadius_Pen.Width);
+
+                    var wheelPositions = m.WheelRelativePositions;
+                    var wheelPointsToDraw = new Point[2];
+                    if (m.WheelAngle < 0)
+                    {
+                        wheelPointsToDraw[0] = wheelPositions[0];
+                        wheelPointsToDraw[1] = wheelPositions[3];
+                    }
+                    else
+                    {
+                        wheelPointsToDraw[0] = wheelPositions[1];
+                        wheelPointsToDraw[1] = wheelPositions[2];
+                    }
+
+                    var points = new Point[] { wheelPointsToDraw[0], m.TurningRadiusPoint, wheelPointsToDraw[1] };
+                    DrawLogicLines(g, pen, RelativePointToRealPoints(points));
+                }
+            }
+
+            // Draw Guid lines
+            {
+                if (m.WheelAngle != 0)
+                {
+                    if (m.GuideLine_Body_Draw)
+                    {
+                        var pen = new Pen(m.GuideLine_Body_Pen.Color, m.GuideLine_Body_Pen.Width);
+
+                        var body = GenerateRectanglePoints(m.Dimension_W, m.Dimension_L);
+                        foreach (Point pt in body)
+                        {
+                            DrawLogicCircle(g, pen, RelativePointToRealPoint(m.TurningRadiusPoint), RelativePointToRealPoint(pt));
+                        }
+                    }
+
+                    if (m.GuideLine_Wheel_Draw)
+                    {
+                        var pen = new Pen(m.GuideLine_Wheel_Pen.Color, m.GuideLine_Wheel_Pen.Width);
+
+                        var wheelPositions = m.WheelRelativePositions;
+                        foreach (Point pt in wheelPositions)
+                        {
+                            DrawLogicCircle(g, pen, RelativePointToRealPoint(m.TurningRadiusPoint), RelativePointToRealPoint(pt));
+                        }
+                    }
                 }
             }
         }
@@ -237,7 +347,7 @@ namespace CarDriveSimulator
          * |---------
          * 
          */
-        public Point[] RotateRectangle(Point[] points, int angle)
+        public Point[] RotateRectangle(Point[] points, double angle)
         {
             return points.Select(p => RotatePoint(new Point(0, 0), p, angle)).ToArray();
         }
@@ -260,7 +370,7 @@ namespace CarDriveSimulator
          * . (r)
          * 
          */
-        public Point RotatePoint(Point r, Point pt, int angle)
+        public Point RotatePoint(Point r, Point pt, double angle)
         {
             var ang = -angle * Math.PI / 180;
             var x0 = (pt.X - r.X) * Math.Cos(ang) - (pt.Y - r.Y) * Math.Sin(ang) + r.X;
@@ -279,6 +389,16 @@ namespace CarDriveSimulator
         public void DrawLogicLine(Graphics g, Pen pen, Point pt1, Point pt2)
         {
             g.DrawLine(pen, LogicalToDevice_Point(pt1), LogicalToDevice_Point(pt2));
+        }
+
+        public void DrawLogicCircle(Graphics g, Pen pen, Point center, Point circumFerence)
+        {
+            var radius = Math.Sqrt(Math.Pow(center.X - circumFerence.X, 2) + Math.Pow(center.Y - circumFerence.Y, 2));
+
+            var x = LogicalToDevice_X((int)(center.X - radius));
+            var y = LogicalToDevice_Y((int)(center.Y + radius));
+            var deviceRadius = 2 * radius * ScenarioModel.Scale;
+            g.DrawEllipse(pen, new Rectangle(x, y, (int)deviceRadius, (int)deviceRadius));
         }
 
 
