@@ -37,11 +37,11 @@ namespace CarDriveSimulator
             this.ToolStripMenuItem_EditMode = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItem_Debug = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItem_LoadModel = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItem_Edit = new System.Windows.Forms.ToolStripMenuItem();
             this.panelDraw = new System.Windows.Forms.Panel();
             this.pictureBoxDraw = new System.Windows.Forms.PictureBox();
             this.panelDebugInfo = new System.Windows.Forms.Panel();
             this.labelDebugInfo = new System.Windows.Forms.Label();
-            this.ToolStripMenuItem_Edit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panelDraw.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxDraw)).BeginInit();
@@ -62,56 +62,63 @@ namespace CarDriveSimulator
             this.ToolStripMenuItem_Edit});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1656, 42);
+            this.menuStrip1.Size = new System.Drawing.Size(1656, 40);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
             // ToolStripMenuItem_New
             // 
             this.ToolStripMenuItem_New.Name = "ToolStripMenuItem_New";
-            this.ToolStripMenuItem_New.Size = new System.Drawing.Size(82, 38);
+            this.ToolStripMenuItem_New.Size = new System.Drawing.Size(82, 36);
             this.ToolStripMenuItem_New.Text = "New";
             this.ToolStripMenuItem_New.Click += new System.EventHandler(this.ToolStripMenuItem_New_Click);
             // 
             // ToolStripMenuItem_Open
             // 
             this.ToolStripMenuItem_Open.Name = "ToolStripMenuItem_Open";
-            this.ToolStripMenuItem_Open.Size = new System.Drawing.Size(93, 38);
+            this.ToolStripMenuItem_Open.Size = new System.Drawing.Size(93, 36);
             this.ToolStripMenuItem_Open.Text = "Open";
             this.ToolStripMenuItem_Open.Click += new System.EventHandler(this.ToolStripMenuItem_Open_Click);
             // 
             // ToolStripMenuItem_Save
             // 
             this.ToolStripMenuItem_Save.Name = "ToolStripMenuItem_Save";
-            this.ToolStripMenuItem_Save.Size = new System.Drawing.Size(84, 38);
+            this.ToolStripMenuItem_Save.Size = new System.Drawing.Size(84, 36);
             this.ToolStripMenuItem_Save.Text = "Save";
             this.ToolStripMenuItem_Save.Click += new System.EventHandler(this.ToolStripMenuItem_Save_Click);
             // 
             // ToolStripMenuItem_SaveAs
             // 
             this.ToolStripMenuItem_SaveAs.Name = "ToolStripMenuItem_SaveAs";
-            this.ToolStripMenuItem_SaveAs.Size = new System.Drawing.Size(116, 38);
+            this.ToolStripMenuItem_SaveAs.Size = new System.Drawing.Size(116, 36);
             this.ToolStripMenuItem_SaveAs.Text = "Save As";
             this.ToolStripMenuItem_SaveAs.Click += new System.EventHandler(this.ToolStripMenuItem_SaveAs_Click);
             // 
             // ToolStripMenuItem_EditMode
             // 
             this.ToolStripMenuItem_EditMode.Name = "ToolStripMenuItem_EditMode";
-            this.ToolStripMenuItem_EditMode.Size = new System.Drawing.Size(144, 38);
+            this.ToolStripMenuItem_EditMode.Size = new System.Drawing.Size(144, 36);
             this.ToolStripMenuItem_EditMode.Text = "Edit Mode";
             this.ToolStripMenuItem_EditMode.Click += new System.EventHandler(this.ToolStripMenuItem_EditMode_Click);
             // 
             // ToolStripMenuItem_Debug
             // 
             this.ToolStripMenuItem_Debug.Name = "ToolStripMenuItem_Debug";
-            this.ToolStripMenuItem_Debug.Size = new System.Drawing.Size(106, 38);
+            this.ToolStripMenuItem_Debug.Size = new System.Drawing.Size(106, 36);
             this.ToolStripMenuItem_Debug.Text = "Debug";
             // 
             // ToolStripMenuItem_LoadModel
             // 
             this.ToolStripMenuItem_LoadModel.Name = "ToolStripMenuItem_LoadModel";
-            this.ToolStripMenuItem_LoadModel.Size = new System.Drawing.Size(161, 38);
+            this.ToolStripMenuItem_LoadModel.Size = new System.Drawing.Size(161, 36);
             this.ToolStripMenuItem_LoadModel.Text = "Load Model";
+            // 
+            // ToolStripMenuItem_Edit
+            // 
+            this.ToolStripMenuItem_Edit.Name = "ToolStripMenuItem_Edit";
+            this.ToolStripMenuItem_Edit.Size = new System.Drawing.Size(74, 36);
+            this.ToolStripMenuItem_Edit.Text = "Edit";
+            this.ToolStripMenuItem_Edit.Click += new System.EventHandler(this.ToolStripMenuItem_Edit_Click);
             // 
             // panelDraw
             // 
@@ -152,13 +159,6 @@ namespace CarDriveSimulator
             this.labelDebugInfo.TabIndex = 0;
             this.labelDebugInfo.Text = "Debug";
             // 
-            // ToolStripMenuItem_Edit
-            // 
-            this.ToolStripMenuItem_Edit.Name = "ToolStripMenuItem_Edit";
-            this.ToolStripMenuItem_Edit.Size = new System.Drawing.Size(74, 38);
-            this.ToolStripMenuItem_Edit.Text = "Edit";
-            this.ToolStripMenuItem_Edit.Click += new System.EventHandler(this.ToolStripMenuItem_Edit_Click);
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(13F, 32F);
@@ -173,6 +173,7 @@ namespace CarDriveSimulator
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.FormMain_Paint);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FormMain_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.FormMain_KeyUp);
             this.Resize += new System.EventHandler(this.FormMain_Resize);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();

@@ -19,6 +19,9 @@ namespace CarDriveSimulator
         private MouseEventArgs mouseEventArgs;
         private Point previousMousePoint = new Point(0, 0);
 
+        private Keys lastKeyDownValue = Keys.None;
+        private int lastKeyDownCount = 0;
+
         public FormMain()
         {
             CreateNewScenario();
@@ -167,11 +170,11 @@ namespace CarDriveSimulator
             //debugInfo += $", panelDraw: {panelDraw.Left}, {panelDraw.Top}, {panelDraw.Right}, {panelDraw.Bottom}";
             //debugInfo += $", pictureBoxDraw: {pictureBoxDraw.Left}, {pictureBoxDraw.Top}, {pictureBoxDraw.Right}, {pictureBoxDraw.Bottom}";
 
-            debugInfo += $", Original: {controller.ScenarioModel.OriginalPointInDevicePoint}";
+            debugInfo += $", Original: {controller.ScenarioModel.OriginalPointInDevice}";
             debugInfo += $", Scale: {controller.ScenarioModel.Scale:F2}";
             if (mouseEventArgs != null)
             {
-                debugInfo += $", mouseEventArgs: {mouseEventArgs.Location} => logic: {controller.DeviceToLogical_Point(mouseEventArgs.Location)}, Button: {mouseEventArgs.Button}, Clicks: {mouseEventArgs.Clicks}, Delta: {mouseEventArgs.Delta}";
+                debugInfo += $", mouseEventArgs: {mouseEventArgs.Location}, Button: {mouseEventArgs.Button}, Clicks: {mouseEventArgs.Clicks}, Delta: {mouseEventArgs.Delta}";
             }
             labelDebugInfo.Text = debugInfo;
         }
@@ -256,23 +259,43 @@ namespace CarDriveSimulator
 
         private void FormMain_KeyDown(object sender, KeyEventArgs e)
         {
+            if (lastKeyDownValue == e.KeyCode)
+            {
+                lastKeyDownCount += 1;
+            }
+            else
+            {
+                lastKeyDownValue = e.KeyCode;
+                lastKeyDownCount = 1;
+            }
+
+            var speed = Math.Max(Math.Min(lastKeyDownCount, 5), 1);
+
             var redraw = false;
             switch(e.KeyCode)
             {
                 case Keys.A:
-                    controller.RotateActiveVehicle(0, -1);
+                    controller.RotateSelectedModel(0, speed);
                     redraw = true;
                     break;
                 case Keys.D:
-                    controller.RotateActiveVehicle(0, 1);
+                    controller.RotateSelectedModel(0, -speed);
                     redraw = true;
                     break;
                 case Keys.Q:
-                    controller.RotateActiveVehicle(-1, 0);
+                    controller.RotateSelectedModel(speed, 0);
                     redraw = true;
                     break;
                 case Keys.E:
-                    controller.RotateActiveVehicle(1, 0);
+                    controller.RotateSelectedModel(-speed, 0);
+                    redraw = true;
+                    break;
+                case Keys.W:
+                    controller.MoveActiveVehicleModel(100 * speed, true);
+                    redraw = true;
+                    break;
+                case Keys.S:
+                    controller.MoveActiveVehicleModel(100 * speed, false);
                     redraw = true;
                     break;
                 default:
@@ -285,6 +308,12 @@ namespace CarDriveSimulator
                 Update_LabelDebugInfo();
                 pictureBoxDraw.Invalidate();
             }
+        }
+
+        private void FormMain_KeyUp(object sender, KeyEventArgs e)
+        {
+            lastKeyDownValue = Keys.None;
+            lastKeyDownCount = 0;
         }
     }
 }
