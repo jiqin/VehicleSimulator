@@ -106,5 +106,38 @@ namespace CarDriveSimulator
                 new Point(-xLength / 2,  yLength / 2),
             };
         }
+
+
+        public void DrawLogicLine(Graphics g, Pen pen, Point pt1, Point pt2)
+        {
+            g.DrawLine(pen, LogicalToDevice_Point(pt1), LogicalToDevice_Point(pt2));
+        }
+
+        public void DrawLogicCircle(Graphics g, Pen pen, Point center, Point circumFerence)
+        {
+            var radius = Math.Sqrt(Math.Pow(center.X - circumFerence.X, 2) + Math.Pow(center.Y - circumFerence.Y, 2));
+            DrawLogicCircle(g, pen, center, radius);
+        }
+
+        public void DrawLogicCircle(Graphics g, Pen pen, Point center, double radius)
+        {
+            var x = LogicalToDevice_X((int)(center.X - radius));
+            var y = LogicalToDevice_Y((int)(center.Y + radius));
+            var deviceRadius = 2 * radius * Scale;
+            g.DrawEllipse(pen, new Rectangle(x, y, (int)deviceRadius, (int)deviceRadius));
+        }
+
+        public void DrawLogicLines(Graphics g, Pen pen, Point[] points, bool enclose = true)
+        {
+            for (var i = 0; i < points.Length - 1; ++i)
+            {
+                DrawLogicLine(g, pen, points[i], points[i + 1]);
+            }
+
+            if (enclose)
+            {
+                DrawLogicLine(g, pen, points[points.Length - 1], points[0]);
+            }
+        }
     }
 }

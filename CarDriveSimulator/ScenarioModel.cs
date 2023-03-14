@@ -74,16 +74,8 @@ namespace CarDriveSimulator
 
         public Point Position = new Point(0, 0);
         public double Angle = 90;
-        public double Radian => GeometryUtils.AngleToRadian(Angle);
 
         public PenModel Pen = new PenModel(Color.Black, 3);
-
-        public Point RelativePointToLogic(Point pt)
-        {
-            pt = GeometryUtils.RotatePoint(new Point(0, 0), pt, Angle);
-            pt = pt + new Size(Position);
-            return pt;
-        }
     }
 
     /*
@@ -134,39 +126,11 @@ namespace CarDriveSimulator
         public Point DriverPosition = new Point(300, 500);
         public int DriverSize = 300;
 
-        public Point[] BodyRelativePoints => GeometryUtils.GenerateRectanglePoints(Dimension_L, Dimension_W);
-
-        public Point[] WheelRelativePositions
-        {
-            get
-            {
-                return new Point[] {
-                    new Point(   Dimension_L / 2 - FrontOverhang,   WheelTrack / 2),
-                    new Point(   Dimension_L / 2 - FrontOverhang, - WheelTrack / 2),
-                    new Point(- (Dimension_L / 2 - BackOverhang), - WheelTrack / 2),
-                    new Point(- (Dimension_L / 2 - BackOverhang),   WheelTrack / 2),
-                };
-            }
-        }
-
-        public Point[] RearviewMirrowRelativePositions
-        {
-            get
-            {
-                return new Point[] {
-                    new Point(RearviewMirrow_Position_X,   (Dimension_W + RearviewMirrow_W) / 2),
-                    new Point(RearviewMirrow_Position_X, - (Dimension_W + RearviewMirrow_W) / 2),
-                };
-            }
-        }
-
         // Position and Angle
         public Point Position = new Point(0, 0);
         public double VehicleAngle = 90;    // Default towards to Up.
         public double WheelAngle = 0;
-
-        public double VehicleRadian => GeometryUtils.AngleToRadian(VehicleAngle);
-        public double WheelRadian => GeometryUtils.AngleToRadian(WheelAngle);
+        public double MaxWheelAngle = 30;
 
         // Draw Vehicle
         public PenModel PenBody = new PenModel(Color.Black, 5);
@@ -179,70 +143,11 @@ namespace CarDriveSimulator
 
         public bool TurningRadius_Draw = false;
         public PenModel TurningRadius_Pen = new PenModel(Color.Yellow, 5);
-        public Point TurningRadius_RelativePoint = new Point(0, 0);
 
         public bool GuideLine_Body_Draw = false;
         public PenModel GuideLine_Body_Pen = new PenModel(Color.Green, 2);
 
         public bool GuideLine_Wheel_Draw = false;
         public PenModel GuideLine_Wheel_Pen = new PenModel(Color.Red, 2);
-
-        public VehicleModel()
-        {
-            TurningRadius_RelativePoint = new Point(-(Dimension_L / 2 - BackOverhang), int.MaxValue / 2);
-        }
-
-        public void Rotate(int vehicleAngleDelta, int wheelAngleDelta)
-        {
-            VehicleAngle += vehicleAngleDelta;
-
-            WheelAngle += wheelAngleDelta;
-            if (WheelAngle < -30)
-            {
-                WheelAngle = -30;
-            }
-            if (WheelAngle > 30)
-            {
-                WheelAngle = 30;
-            }
-
-            /*
-             *      ( ) Turning Radius Point
-             *       ^
-             *       |
-             *      TurningRadius
-             *       |
-             *       v
-             *     Wheel3       WheelBase       Wheel0  (WheelAngle > 0) Tan(WheelAngle) = WheelBase / TurningRadius
-             *     
-             *     
-             *     Wheel2                       Wheel1
-             */
-
-            if (Math.Abs(WheelAngle) <= 0.01)
-            {
-                TurningRadius_RelativePoint.Y = int.MaxValue / 2;
-            }
-            else
-            {
-                var TurningRadius = WheelBase / Math.Tan(WheelRadian);
-                TurningRadius_RelativePoint.Y = (int)(TurningRadius + WheelTrack / 2 * (WheelAngle > 0 ? 1 : -1));
-            }
-        }
-
-        public Point RelativePointToLogic(Point pt)
-        {
-            pt = GeometryUtils.RotatePoint(new Point(0, 0), pt, VehicleAngle);
-            pt = pt + new Size(Position);
-            return pt;
-        }
-
-        public Point RelativeWheelPointToLogic(Point wheelPosition, Point pt)
-        {
-            pt = GeometryUtils.RotatePoint(wheelPosition, pt, WheelAngle);
-            pt = GeometryUtils.RotatePoint(new Point(0, 0), pt, VehicleAngle);
-            pt = pt + new Size(Position);
-            return pt;
-        }
     }
 }
