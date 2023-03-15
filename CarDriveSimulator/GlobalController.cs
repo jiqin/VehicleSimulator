@@ -10,60 +10,48 @@ namespace CarDriveSimulator
 {
     class GlobalController
     {
-        public enum EditMode
-        {
-            Edit = 0,
-            Simulate = 1,
-        }
-        public EditMode CurrentEditMode { get; private set; }
-
         private Bitmap cachedBitmap = new Bitmap(1, 1);
         private Graphics cachedG;
 
-        public enum MouseMode
-        {
-            None = 0,
-            MoveScreen,
-            MoveSelectComponent,
-        }
+        private ScenarioModel scenarioModel;
+        private GeometryUtils geometryUtils;
 
-        public MouseMode CurrentMouseMode { get; set; }
+        private List<VehicleModelExtension> vehicleModelExtensions;
+        private VehicleModelExtension selectedVehicleModelExtension;
 
-        public ScenarioModel ScenarioModel;
-        public GeometryUtils GeometryUtils;
-
-        public List<VehicleModelExtension> vehicleModelExtensions;
-        public VehicleModelExtension activeVehicleModelExtension;
-
-        public List<ParkingModelExtension> parkingModelExtensions;
+        private List<ParkingModelExtension> parkingModelExtensions;
+        private ParkingModelExtension selectedParkingModelExtension;
 
         private string filePathName;
 
         public GlobalController()
         {
-            this.ScenarioModel = new ScenarioModel();
-            this.ScenarioModel.OriginalPointInDevice = new Point(300, 300);
+            this.parkingModelExtensions = new List<ParkingModelExtension>();
+            this.vehicleModelExtensions = new List<VehicleModelExtension>();
 
-            this.GeometryUtils = new GeometryUtils();
-            this.GeometryUtils.OriginalPointInDevice = this.ScenarioModel.OriginalPointInDevice;
-            this.GeometryUtils.Scale = this.ScenarioModel.Scale;
+            this.scenarioModel = new ScenarioModel();
+            this.scenarioModel.OriginalPointInDevice = new Point(300, 300);
 
-            this.ScenarioModel.ParkingModels.Add(new ParkingModel { Cube_L = 6000, Cube_W = 2500, Cube_Number = 10, Position = new Point(1500, -27_000) });
-            this.ScenarioModel.ParkingModels.Add(new ParkingModel { Cube_L = 2500, Cube_W = 5000, Cube_Number = 10, Position = new Point(-7000, -10_000) });
-            this.parkingModelExtensions = this.ScenarioModel.ParkingModels.Select(m => new ParkingModelExtension(m, GeometryUtils)).ToList();
+            this.geometryUtils = new GeometryUtils();
+            this.geometryUtils.OriginalPointInDevice = this.scenarioModel.OriginalPointInDevice;
+            this.geometryUtils.Scale = this.scenarioModel.Scale;
 
-            this.ScenarioModel.VehicleModels.Add(new VehicleModel() { Position = new Point(0, 0) });
-            this.ScenarioModel.VehicleModels.Add(new VehicleModel() { Position = new Point(2700, 6000) });
-            this.ScenarioModel.VehicleModels.Add(new VehicleModel() { Position = new Point(2700, -6000) });
-            this.vehicleModelExtensions = this.ScenarioModel.VehicleModels.Select(m => new VehicleModelExtension(m, GeometryUtils)).ToList();
+            this.scenarioModel.ParkingModels.Add(new ParkingModel { Cube_L = 6000, Cube_W = 2500, Cube_Number = 10, Position = new Point(1500, -27_000) });
+            this.scenarioModel.ParkingModels.Add(new ParkingModel { Cube_L = 2500, Cube_W = 5000, Cube_Number = 10, Position = new Point(-7000, -10_000) });
+            this.parkingModelExtensions = this.scenarioModel.ParkingModels.Select(m => new ParkingModelExtension(m, geometryUtils)).ToList();
 
-            this.activeVehicleModelExtension = vehicleModelExtensions[0];
-            this.activeVehicleModelExtension.Model.PenBody = new PenModel(Color.DarkGreen, 8);
-            this.activeVehicleModelExtension.Model.FrontBackExtionsionLine_Draw = true;
-            this.activeVehicleModelExtension.Model.TurningRadius_Draw = true;
-            this.activeVehicleModelExtension.Model.GuideLine_Body_Draw = true;
+            AddNewVehicle(new Point(0, 0));
+            AddNewVehicle(new Point(2700, 6000));
+            AddNewVehicle(new Point(2700, -6000));
 
             Reset();
+        }
+
+        public void AddNewVehicle(Point position)
+        {
+            var m = new VehicleModel() { Position = position };
+            this.scenarioModel.VehicleModels.Add(m);
+            this.vehicleModelExtensions.Add(new VehicleModelExtension(m, geometryUtils));
         }
 
         public void LoadFromFile(string filePathName)
@@ -75,7 +63,7 @@ namespace CarDriveSimulator
 
         public string GetScenarioText()
         {
-            return ScenarioModel.SerializeToJson(this.ScenarioModel);
+            return ScenarioModel.SerializeToJson(this.scenarioModel);
         }
 
         public void UpdateScenarios(string value)
@@ -85,7 +73,7 @@ namespace CarDriveSimulator
             {
                 throw new Exception("Fail to load scenarios.");
             }
-            this.ScenarioModel = m;
+            this.scenarioModel = m;
         }
 
         public bool Save()
@@ -106,95 +94,74 @@ namespace CarDriveSimulator
 
         public void Reset()
         {
-            CurrentEditMode = EditMode.Edit;
-            CurrentMouseMode = MouseMode.None;
-
             cachedBitmap = new Bitmap(1, 1);
             cachedG = Graphics.FromImage(cachedBitmap);
         }
 
-        public EditMode UpdateEditMode()
+        public void UpdateSelectedModel(Point devicePt, bool isDrive)
         {
-            if (CurrentEditMode == EditMode.Edit)
+            var logicPt = geometryUtils.DeviceToLogical_Point(devicePt);
+
+            UnselectAllMode();
+
+            foreach (var m in vehicleModelExtensions)
             {
-                CurrentEditMode = EditMode.Simulate;
+                if (m.IsSelected(logicPt))
+                {
+                    this.selectedVehicleModelExtension = m;
+                    this.selectedVehicleModelExtension.SetSelected(true, isDrive);
+                    return;
+                }
+            }
+
+            foreach (var m in parkingModelExtensions)
+            {
+                if (m.IsSelected(logicPt))
+                {
+                    this.selectedParkingModelExtension = m;
+                    this.selectedParkingModelExtension.SetSelected(true);
+                    return;
+                }
+            }
+        }
+
+        public void UnselectAllMode()
+        {
+            if (this.selectedVehicleModelExtension != null)
+            {
+                this.selectedVehicleModelExtension.SetSelected(false, false);
+                this.selectedVehicleModelExtension = null;
+            }
+
+            if (this.selectedParkingModelExtension != null)
+            {
+                this.selectedParkingModelExtension.SetSelected(false);
+                this.selectedParkingModelExtension = null;
+            }
+        }
+
+        public void MoveModel(Point previousDevicePt, Point currentDevicePt)
+        {
+            var deviceSize = new Size(currentDevicePt.X - previousDevicePt.X, currentDevicePt.Y - previousDevicePt.Y);
+            var logicSize = new Size((int)(deviceSize.Width / scenarioModel.Scale), (int)(-deviceSize.Height / scenarioModel.Scale));
+
+            if (selectedVehicleModelExtension == null && selectedParkingModelExtension == null) // Move whole screen
+            {
+                scenarioModel.OriginalPointInDevice = scenarioModel.OriginalPointInDevice + deviceSize;
+
+                this.geometryUtils.OriginalPointInDevice = this.scenarioModel.OriginalPointInDevice;
+                this.geometryUtils.Scale = this.scenarioModel.Scale;
             }
             else
             {
-                CurrentEditMode = EditMode.Edit;
-            }
-            return CurrentEditMode;
-        }
-
-        public void MoveModel(Size devicePt)
-        {
-            // System.Diagnostics.Trace.WriteLine($"MoveOriginalPoint {CurrentMouseMode}, {devicePt}");
-            if (CurrentMouseMode == MouseMode.MoveScreen)
-            {
-                ScenarioModel.OriginalPointInDevice = ScenarioModel.OriginalPointInDevice + devicePt;
-
-                this.GeometryUtils.OriginalPointInDevice = this.ScenarioModel.OriginalPointInDevice;
-                this.GeometryUtils.Scale = this.ScenarioModel.Scale;
-            }
-            else if (CurrentMouseMode == MouseMode.MoveSelectComponent)
-            {
-                var logicDeltaX = devicePt.Width / ScenarioModel.Scale;
-                var logicDeltaY = -devicePt.Height / ScenarioModel.Scale;
-
-                if (this.CurrentEditMode == EditMode.Edit)
-                {
-                    activeVehicleModelExtension.Model.Position += new Size((int)logicDeltaX, (int)logicDeltaY);
-                }
-                else
-                {
-                    //foreach (var m in ScenarioModel.VehicleModels)
-                    //{
-                    //    MoveVehicleModel(m, logicDeltaX, logicDeltaY);
-                    //}
-
-                    MoveVehicleModel(activeVehicleModelExtension, logicDeltaX, logicDeltaY);
-                }
+                selectedVehicleModelExtension?.Move(logicSize);
+                selectedParkingModelExtension?.Move(logicSize);
             }
         }
 
-        public void MoveVehicleModel(VehicleModelExtension m, double logicDeltaX, double logicDeltaY)
+        public void DriveActiveVehicleModel(double logicDistance, bool moveForward)
         {
-            var logicDistance = Math.Sqrt(Math.Pow(logicDeltaX, 2) + Math.Pow(logicDeltaY, 2));
-            // 判断2个向量夹角
-            // cos(ang) = ((x1 * x2) + (y1 * y2))
-            var vehicleMoveForward = logicDeltaX * Math.Cos(m.VehicleRadian) + logicDeltaY * Math.Sin(m.VehicleRadian) > 0;
-
-            MoveVehicleModel(m, logicDistance, vehicleMoveForward);
-        }
-
-        public void MoveVehicleModel(VehicleModelExtension m, double logicDistance, bool moveForward)
-        {
-            if (m.Model.WheelAngle == 0)
-            {
-                var xDelta = logicDistance * Math.Cos(m.VehicleRadian) * (moveForward ? 1 : -1);
-                var yDelta = logicDistance * Math.Sin(m.VehicleRadian) * (moveForward ? 1 : -1);
-
-                m.Model.Position += new Size((int)(xDelta), (int)(yDelta));
-            }
-            else
-            {
-                var or = m.TurningRadius_RelativePoint;
-                var turningRadius = Math.Sqrt(Math.Pow(or.X, 2) + Math.Pow(or.Y, 2));
-                var angleDelta = GeometryUtils.RadianToAngle(Math.Asin(logicDistance / turningRadius));
-                if ((m.Model.WheelAngle > 0 && !moveForward)        // Turn left and move back,
-                    || (m.Model.WheelAngle < 0 && moveForward))     // Turn right and move forward
-                {
-                    angleDelta = -angleDelta;
-                }
-
-                m.Model.Position = GeometryUtils.RotatePoint(m.RelativePointToLogic(or), m.Model.Position, angleDelta);
-                m.Model.VehicleAngle += angleDelta;
-            }
-        }
-
-        public void MoveActiveVehicleModel(double logicDistance, bool moveForward)
-        {
-            MoveVehicleModel(activeVehicleModelExtension, logicDistance, moveForward);
+            selectedVehicleModelExtension?.Drive(logicDistance, moveForward);
         }
 
         public void ScaleFromPoint(Point scaleAtDevicePt, bool increase)
@@ -202,22 +169,22 @@ namespace CarDriveSimulator
             // scaleAtDevicePt    ==>   Original
             // Original += scaleAtDevicePt + (Original - scaleAtDevicePt) * (0.9 or 1.1)
             var deltaScale = increase ? 1.1 : 1 / 1.1;
-            var sizeX = (ScenarioModel.OriginalPointInDevice.X - scaleAtDevicePt.X) * deltaScale;
-            var sizeY = (ScenarioModel.OriginalPointInDevice.Y - scaleAtDevicePt.Y) * deltaScale;
+            var sizeX = (scenarioModel.OriginalPointInDevice.X - scaleAtDevicePt.X) * deltaScale;
+            var sizeY = (scenarioModel.OriginalPointInDevice.Y - scaleAtDevicePt.Y) * deltaScale;
 
-            ScenarioModel.OriginalPointInDevice = scaleAtDevicePt + (new Size((int)sizeX, (int)sizeY));
-            ScenarioModel.Scale *= deltaScale;
+            scenarioModel.OriginalPointInDevice = scaleAtDevicePt + (new Size((int)sizeX, (int)sizeY));
+            scenarioModel.Scale *= deltaScale;
 
-            this.GeometryUtils.OriginalPointInDevice = this.ScenarioModel.OriginalPointInDevice;
-            this.GeometryUtils.Scale = this.ScenarioModel.Scale;
+            this.geometryUtils.OriginalPointInDevice = this.scenarioModel.OriginalPointInDevice;
+            this.geometryUtils.Scale = this.scenarioModel.Scale;
         }
 
         public Bitmap Draw(int deviceWidth, int deviceHeight)
         {
-            var logicX1 = GeometryUtils.DeviceToLogical_X(0);
-            var logicX2 = GeometryUtils.DeviceToLogical_X(deviceWidth);
-            var logicY1 = GeometryUtils.DeviceToLogical_Y(deviceHeight);
-            var logicY2 = GeometryUtils.DeviceToLogical_Y(0);
+            var logicX1 = geometryUtils.DeviceToLogical_X(0);
+            var logicX2 = geometryUtils.DeviceToLogical_X(deviceWidth);
+            var logicY1 = geometryUtils.DeviceToLogical_Y(deviceHeight);
+            var logicY2 = geometryUtils.DeviceToLogical_Y(0);
 
             if (cachedBitmap.Width < deviceWidth || cachedBitmap.Height < deviceHeight)
             {
@@ -230,8 +197,8 @@ namespace CarDriveSimulator
             {
                 g.FillRectangle(Brushes.White, new Rectangle(0, 0, cachedBitmap.Width, cachedBitmap.Height));
 
-                DrawAxis(g, ScenarioModel.Axis1, logicX1, logicX2, logicY1, logicY2);
-                DrawAxis(g, ScenarioModel.Axis2, logicX1, logicX2, logicY1, logicY2);
+                DrawAxis(g, scenarioModel.Axis1, logicX1, logicX2, logicY1, logicY2);
+                DrawAxis(g, scenarioModel.Axis2, logicX1, logicX2, logicY1, logicY2);
 
                 foreach (var m in parkingModelExtensions)
                 {
@@ -258,17 +225,18 @@ namespace CarDriveSimulator
             // Draw axis
             for (var x = logicX1 / axisModel.Spacing * axisModel.Spacing; x < logicX2; x += axisModel.Spacing)
             {
-                GeometryUtils.DrawLogicLine(g, pen, new Point(x, logicY1), new Point(x, logicY2));
+                geometryUtils.DrawLogicLine(g, pen, new Point(x, logicY1), new Point(x, logicY2));
             }
             for (var y = logicY1 / axisModel.Spacing * axisModel.Spacing; y < logicY2; y += axisModel.Spacing)
             {
-                GeometryUtils.DrawLogicLine(g, pen, new Point(logicX1, y), new Point(logicX2, y));
+                geometryUtils.DrawLogicLine(g, pen, new Point(logicX1, y), new Point(logicX2, y));
             }
         }
 
-        public void RotateSelectedModel(int vehicleAngleDelta, int wheelAngleDelta)
+        public void RotateSelectedModel(int angleDelta)
         {
-            activeVehicleModelExtension.Rotate(vehicleAngleDelta, wheelAngleDelta);
+            selectedVehicleModelExtension?.Rotate(angleDelta);
+            selectedParkingModelExtension?.Rotate(angleDelta);
         }
     }
 }

@@ -27,8 +27,6 @@ namespace CarDriveSimulator
             CreateNewScenario();
 
             InitializeComponent();
-
-            UpdateMenuItemEditModeDisplayText();
         }
 
         private void ToolStripMenuItem_New_Click(object sender, EventArgs e)
@@ -97,6 +95,13 @@ namespace CarDriveSimulator
             }
         }
 
+        private void ToolStripMenuItem_AddVehicle_Click(object sender, EventArgs e)
+        {
+            controller.AddNewVehicle(new Point(0, 0));
+
+            pictureBoxDraw.Invalidate();
+        }
+
         private void ToolStripMenuItem_Edit_Click(object sender, EventArgs e)
         {
             var textBox = new FormEditScenarios(controller.GetScenarioText());
@@ -115,21 +120,9 @@ namespace CarDriveSimulator
             }
         }
 
-        private void ToolStripMenuItem_EditMode_Click(object sender, EventArgs e)
-        {
-            controller.UpdateEditMode();
-            UpdateMenuItemEditModeDisplayText();
-        }
-
-        private void UpdateMenuItemEditModeDisplayText()
-        {
-            ToolStripMenuItem_EditMode.Text = (controller.CurrentEditMode == GlobalController.EditMode.Edit ? "Edit Mode" : "Simulator Mode");
-        }
-
         private void Update_EventMessage(string eventMessage)
         {
             latestEventMessage = eventMessage;
-            //Trace.WriteLine($"Get event: {eventMessage}");
         }
 
         private void FormMain_Load(object sender, EventArgs e)
@@ -170,8 +163,8 @@ namespace CarDriveSimulator
             //debugInfo += $", panelDraw: {panelDraw.Left}, {panelDraw.Top}, {panelDraw.Right}, {panelDraw.Bottom}";
             //debugInfo += $", pictureBoxDraw: {pictureBoxDraw.Left}, {pictureBoxDraw.Top}, {pictureBoxDraw.Right}, {pictureBoxDraw.Bottom}";
 
-            debugInfo += $", Original: {controller.ScenarioModel.OriginalPointInDevice}";
-            debugInfo += $", Scale: {controller.ScenarioModel.Scale:F2}";
+            //debugInfo += $", Original: {controller.GeometryUtils.OriginalPointInDevice}";
+            //debugInfo += $", Scale: {controller.GeometryUtils.Scale:F2}";
             if (mouseEventArgs != null)
             {
                 debugInfo += $", mouseEventArgs: {mouseEventArgs.Location}, Button: {mouseEventArgs.Button}, Clicks: {mouseEventArgs.Clicks}, Delta: {mouseEventArgs.Delta}";
@@ -203,15 +196,9 @@ namespace CarDriveSimulator
         {
             Update_EventMessage($"pictureBoxDraw_MouseDown");
             previousMousePoint = e.Location;
-            if (e.Button == MouseButtons.Right)
-            {
-                controller.CurrentMouseMode = GlobalController.MouseMode.MoveScreen;
-            }
-            else if (e.Button == MouseButtons.Left)
-            {
-                controller.CurrentMouseMode = GlobalController.MouseMode.MoveSelectComponent;
-            }
-            
+
+            controller.UpdateSelectedModel(e.Location, e.Button == MouseButtons.Left);
+
             mouseEventArgs = e;
             Update_LabelDebugInfo();
             pictureBoxDraw.Invalidate();
@@ -221,7 +208,6 @@ namespace CarDriveSimulator
         {
             Update_EventMessage($"pictureBoxDraw_MouseUp");
             previousMousePoint = e.Location;
-            controller.CurrentMouseMode = GlobalController.MouseMode.None;
             mouseEventArgs = e;
             Update_LabelDebugInfo();
             pictureBoxDraw.Invalidate();
@@ -239,15 +225,16 @@ namespace CarDriveSimulator
         private void pictureBoxDraw_MouseMove(object sender, MouseEventArgs e)
         {
             Update_EventMessage($"pictureBoxDraw_MouseMove");
-            controller.MoveModel(new Size(e.Location.X - previousMousePoint.X, e.Location.Y - previousMousePoint.Y));
+
+            if (e.Button == MouseButtons.Left || e.Button == MouseButtons.Right)
+            {
+                controller.MoveModel(previousMousePoint, e.Location);
+                pictureBoxDraw.Invalidate();
+            }
+
             previousMousePoint = e.Location;
             mouseEventArgs = e;
             Update_LabelDebugInfo();
-
-            if (e.Button != MouseButtons.None)
-            {
-                pictureBoxDraw.Invalidate();
-            }
         }
 
         private void pictureBoxDraw_Click(object sender, EventArgs e)
@@ -275,27 +262,19 @@ namespace CarDriveSimulator
             switch(e.KeyCode)
             {
                 case Keys.A:
-                    controller.RotateSelectedModel(0, speed);
+                    controller.RotateSelectedModel(speed);
                     redraw = true;
                     break;
                 case Keys.D:
-                    controller.RotateSelectedModel(0, -speed);
-                    redraw = true;
-                    break;
-                case Keys.Q:
-                    controller.RotateSelectedModel(speed, 0);
-                    redraw = true;
-                    break;
-                case Keys.E:
-                    controller.RotateSelectedModel(-speed, 0);
+                    controller.RotateSelectedModel(-speed);
                     redraw = true;
                     break;
                 case Keys.W:
-                    controller.MoveActiveVehicleModel(100 * speed, true);
+                    controller.DriveActiveVehicleModel(100 * speed, true);
                     redraw = true;
                     break;
                 case Keys.S:
-                    controller.MoveActiveVehicleModel(100 * speed, false);
+                    controller.DriveActiveVehicleModel(100 * speed, false);
                     redraw = true;
                     break;
                 default:
@@ -315,5 +294,7 @@ namespace CarDriveSimulator
             lastKeyDownValue = Keys.None;
             lastKeyDownCount = 0;
         }
+
+        
     }
 }

@@ -9,8 +9,10 @@ namespace CarDriveSimulator
 {
     class VehicleModelExtension
     {
-        public VehicleModel Model { get; }
+        private VehicleModel Model { get; }
         public GeometryUtils GeometryUtils;
+
+        public bool IsDriveMode { get; private set; } = false;
 
         public VehicleModelExtension(VehicleModel model, GeometryUtils geometryUtils)
         {
@@ -53,11 +55,26 @@ namespace CarDriveSimulator
 
         public Point TurningRadius_RelativePoint;
 
-        public void Rotate(int vehicleAngleDelta, int wheelAngleDelta)
+        public void Rotate(int angleDelta)
         {
-            Model.VehicleAngle += vehicleAngleDelta;
+            if (!IsDriveMode)
+            {
+                RotateBody(angleDelta);
+            }
+            else
+            {
+                RotateWheel(angleDelta);
+            }
+        }
 
-            Model.WheelAngle += wheelAngleDelta;
+        public void RotateBody(int angleDelta)
+        {
+            Model.VehicleAngle += angleDelta;
+        }
+
+        public void RotateWheel(int angleDelta)
+        {
+            Model.WheelAngle += angleDelta;
             if (Model.WheelAngle < -Model.MaxWheelAngle)
             {
                 Model.WheelAngle = -Model.MaxWheelAngle;
@@ -146,10 +163,13 @@ namespace CarDriveSimulator
 
             // Draw Driver
             {
-                var pen = new Pen(Model.PenBody.Color, Model.PenBody.Width);
+                if (IsDriveMode)
+                {
+                    var pen = new Pen(Model.PenBody.Color, Model.PenBody.Width);
 
-                var position = RelativePointToLogic(Model.DriverPosition);
-                GeometryUtils.DrawLogicCircle(g, pen, position, Model.DriverSize / 2);
+                    var position = RelativePointToLogic(Model.DriverPosition);
+                    GeometryUtils.DrawLogicCircle(g, pen, position, Model.DriverSize / 2);
+                }
             }
 
             // Draw Front Back Extionsion Line
@@ -226,7 +246,71 @@ namespace CarDriveSimulator
 
         public bool IsSelected(Point logicPt)
         {
-            return false;
+            return GeometryUtils.IsPointInPolygon(logicPt, BodyRelativePoints.Select(p => RelativePointToLogic(p)).ToArray());
+        }
+
+        public void SetSelected(bool selected, bool isDrive)
+        {
+            if (selected)
+            {
+                IsDriveMode = isDrive;
+                Model.PenBody = new PenModel(Color.DarkGreen, 8);
+                if (IsDriveMode)
+                {
+                    Model.FrontBackExtionsionLine_Draw = true;
+                    Model.TurningRadius_Draw = true;
+                    Model.GuideLine_Body_Draw = true;
+                }
+            }
+            else
+            {
+                IsDriveMode = false;
+                Model.PenBody = new PenModel(Color.Black, 5);
+                Model.FrontBackExtionsionLine_Draw = false;
+                Model.TurningRadius_Draw = false;
+                Model.GuideLine_Body_Draw = false;
+            }
+        }
+
+        public void Move(Size logicSize)
+        {
+            if (IsDriveMode)
+            {
+                var logicDistance = Math.Sqrt(Math.Pow(logicSize.Width, 2) + Math.Pow(logicSize.Height, 2));
+                // 判断2个向量夹角
+                // cos(ang) = ((x1 * x2) + (y1 * y2))
+                var moveForward = logicSize.Width * Math.Cos(VehicleRadian) + logicSize.Height * Math.Sin(VehicleRadian) > 0;
+                Drive(logicDistance, moveForward);
+            }
+            else
+            {
+                Model.Position += logicSize;
+            }
+        }
+
+        public void Drive(double logicDistance, bool moveForward)
+        {
+            if (Model.WheelAngle == 0)
+            {
+                var xDelta = logicDistance * Math.Cos(VehicleRadian) * (moveForward ? 1 : -1);
+                var yDelta = logicDistance * Math.Sin(VehicleRadian) * (moveForward ? 1 : -1);
+
+                Model.Position += new Size((int)(xDelta), (int)(yDelta));
+            }
+            else
+            {
+                var or = TurningRadius_RelativePoint;
+                var turningRadius = Math.Sqrt(Math.Pow(or.X, 2) + Math.Pow(or.Y, 2));
+                var angleDelta = GeometryUtils.RadianToAngle(Math.Asin(logicDistance / turningRadius));
+                if ((Model.WheelAngle > 0 && !moveForward)        // Turn left and move back,
+                    || (Model.WheelAngle < 0 && moveForward))     // Turn right and move forward
+                {
+                    angleDelta = -angleDelta;
+                }
+
+                Model.Position = GeometryUtils.RotatePoint(RelativePointToLogic(or), Model.Position, angleDelta);
+                Model.VehicleAngle += angleDelta;
+            }
         }
     }
 }

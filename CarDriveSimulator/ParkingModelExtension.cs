@@ -9,8 +9,8 @@ namespace CarDriveSimulator
 {
     class ParkingModelExtension
     {
-        public ParkingModel Model { get; }
-        public GeometryUtils GeometryUtils;
+        private ParkingModel Model { get; }
+        private GeometryUtils GeometryUtils;
 
         public ParkingModelExtension(ParkingModel model, GeometryUtils geometryUtils)
         {
@@ -67,7 +67,24 @@ namespace CarDriveSimulator
 
         public bool IsSelected(Point logicPt)
         {
-            return false;
+            return GeometryUtils.IsPointInPolygon(logicPt, EdgeRelativePoints.Select(p => RelativePointToLogic(p)).ToArray());
+        }
+
+        public void SetSelected(bool selected)
+        {
+            if (selected)
+            {
+                Model.Pen = new PenModel(Color.DarkGreen, 8);
+            }
+            else
+            {
+                Model.Pen = new PenModel(Color.Black, 3);
+            }
+        }
+
+        public void Move(Size logicSize)
+        {
+            Model.Position += logicSize;
         }
     }
 }

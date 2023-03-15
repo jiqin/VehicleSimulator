@@ -139,5 +139,40 @@ namespace CarDriveSimulator
                 DrawLogicLine(g, pen, points[points.Length - 1], points[0]);
             }
         }
+
+
+        public bool IsPointsInTheSameSideOfLine(Point pt1, Point pt2, Point[] line)
+        {
+            // 要判断两个点是否在某条线段的同一侧可以通过叉积来实现
+            Func<Point, Point[], int> crossProduct = (pt, line) =>
+            {
+                return (pt.X - line[0].X) * (line[1].Y - line[0].Y) - (pt.Y - line[0].Y) * (line[1].X - line[0].X);
+            };
+
+            var v1 = crossProduct(pt1, line);
+            var v2 = crossProduct(pt2, line);
+            return (v1 > 0 && v2 > 0) || (v1 < 0 && v2 < 0);
+        }
+
+        public bool IsPointInTriangle(Point pt, Point[] triangle)
+        {
+            // 同侧法
+            // 如果pt在三角形ABC内部，则满足以下三个条件：P,A在BC的同侧、P,B在AC的同侧、PC在AB的同侧
+            return IsPointsInTheSameSideOfLine(pt, triangle[0], new Point[] { triangle[1], triangle[2] })
+                && IsPointsInTheSameSideOfLine(pt, triangle[1], new Point[] { triangle[2], triangle[0] })
+                && IsPointsInTheSameSideOfLine(pt, triangle[2], new Point[] { triangle[0], triangle[1] });
+        }
+
+        public bool IsPointInPolygon(Point pt, Point[] polygon)
+        {
+            for (var i = 1; i < polygon.Length - 1; ++i)
+            {
+                if (IsPointInTriangle(pt, new Point[] {polygon[0], polygon[i], polygon[i+1]}))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
