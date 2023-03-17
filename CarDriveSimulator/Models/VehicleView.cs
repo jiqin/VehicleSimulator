@@ -5,16 +5,89 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarDriveSimulator
+namespace CarDriveSimulator.Models
 {
-    class VehicleModelExtension
+    /*
+     *    /
+     *   /
+     *  /   Angle = 60  (or Radian = Angle / 180 * Pi)
+     * ---------------------------
+     * 
+     * |<-                            Dimension_L                                 ->|
+     * |<-   Back           ->|<-      Wheel Base                  ->|<-  Front   ->|
+     *       Overhand                                                     Overhand
+     *                                                                   
+     *                                                   || Rearview mirrow
+     * |----------------------------------------------------------------------------|
+     * |                    ===== 3                                =====  0         |
+     * |                    =====                                  =====            |
+     * |                                         () Driver Position                 |
+     * |                     ^
+     * |                    Wheel        (0,0) <- Vehicle Coordinate Origin         (Vehicle Head)
+     * |                    Track              Logic Position
+     * |                     v
+     * |                    ===== 2                                ===== 1          |
+     * |                    =====                                  =====            |
+     * |----------------------------------------------------------------------------|
+     *                                                   || Rearview mirrow
+     */
+    class VehicleModel
+    {
+        public string Name = "My Car 1";
+        public string Model = "ModelY";
+
+        // Fixed dimensions
+        public int Dimension_L = 4750;
+        public int Dimension_W = 1921;
+        public int Dimension_H = 1624;
+        public int FrontOverhang = 950;
+        public int BackOverhang { get { return Dimension_L - FrontOverhang - WheelBase; } }
+
+        public int WheelBase = 2890;
+        public int WheelTrack = 1636;
+        public int Wheel_L = 800;
+        public int Wheel_W = 194;
+
+        public int RearviewMirrow_Position_X = 800;
+        public int RearviewMirrow_L = 100;
+        public int RearviewMirrow_W = 200;
+
+        public Point DriverPosition = new Point(300, 500);
+        public int DriverSize = 300;
+
+        // Position and Angle
+        public Point Position = new Point(0, 0);
+        public double VehicleAngle = 90;    // Default towards to Up.
+        public double WheelAngle = 0;
+        public double MaxWheelAngle = 30;
+
+        // Draw Vehicle
+        public PenModel PenBody = new PenModel(Color.Black, 5);
+        public PenModel PenWheel = new PenModel(Color.Red, 3);
+
+        // Draw extention
+        public bool FrontBackExtionsionLine_Draw = false;
+        public int FrontBackExtionsionLine_Length = 10000;
+        public PenModel FrontBackExtionsionLine_Pen = new PenModel(Color.Yellow, 5);
+
+        public bool TurningRadius_Draw = false;
+        public PenModel TurningRadius_Pen = new PenModel(Color.Yellow, 5);
+
+        public bool GuideLine_Body_Draw = false;
+        public PenModel GuideLine_Body_Pen = new PenModel(Color.Green, 2);
+
+        public bool GuideLine_Wheel_Draw = false;
+        public PenModel GuideLine_Wheel_Pen = new PenModel(Color.Red, 2);
+    }
+
+    class VehicleView
     {
         private VehicleModel Model { get; }
         public GeometryUtils GeometryUtils;
 
         public bool IsDriveMode { get; private set; } = false;
 
-        public VehicleModelExtension(VehicleModel model, GeometryUtils geometryUtils)
+        public VehicleView(VehicleModel model, GeometryUtils geometryUtils)
         {
             Model = model;
             GeometryUtils = geometryUtils;
@@ -242,6 +315,14 @@ namespace CarDriveSimulator
                     }
                 }
             }
+
+            // Draw Vehicle Axis
+            {
+                var pen = new Pen(Model.PenBody.Color, Model.PenBody.Width / 2);
+                pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+                GeometryUtils.DrawLogicLines(g, pen, new[] { new Point(-Model.Dimension_L / 2, 0), new Point(Model.Dimension_L / 2, 0) }.Select(pt => RelativePointToLogic(pt)).ToArray());
+                GeometryUtils.DrawLogicLines(g, pen, new[] { new Point(0, -Model.Dimension_W / 2), new Point(0, Model.Dimension_W / 2) }.Select(pt => RelativePointToLogic(pt)).ToArray());
+            }
         }
 
         public bool IsSelected(Point logicPt)
@@ -276,7 +357,7 @@ namespace CarDriveSimulator
         {
             if (IsDriveMode)
             {
-                var logicDistance = Math.Sqrt(Math.Pow(logicSize.Width, 2) + Math.Pow(logicSize.Height, 2));
+                var logicDistance = GeometryUtils.GetDistance(new Point(0, 0), new Point(logicSize.Width, logicSize.Height));
                 // 判断2个向量夹角
                 // cos(ang) = ((x1 * x2) + (y1 * y2))
                 var moveForward = logicSize.Width * Math.Cos(VehicleRadian) + logicSize.Height * Math.Sin(VehicleRadian) > 0;
@@ -300,7 +381,7 @@ namespace CarDriveSimulator
             else
             {
                 var or = TurningRadius_RelativePoint;
-                var turningRadius = Math.Sqrt(Math.Pow(or.X, 2) + Math.Pow(or.Y, 2));
+                var turningRadius = GeometryUtils.GetDistance(or, new Point(0, 0));
                 var angleDelta = GeometryUtils.RadianToAngle(Math.Asin(logicDistance / turningRadius));
                 if ((Model.WheelAngle > 0 && !moveForward)        // Turn left and move back,
                     || (Model.WheelAngle < 0 && moveForward))     // Turn right and move forward

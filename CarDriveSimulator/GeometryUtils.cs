@@ -92,6 +92,11 @@ namespace CarDriveSimulator
             return new Point((int)x0, (int)y0);
         }
 
+        public double GetDistance(Point pt1, Point pt2)
+        {
+            return Math.Sqrt(Math.Pow(pt1.X - pt2.X, 2) + Math.Pow(pt1.Y - pt2.Y, 2));
+        }
+
 
         /*
          *   3       0
@@ -115,7 +120,7 @@ namespace CarDriveSimulator
 
         public void DrawLogicCircle(Graphics g, Pen pen, Point center, Point circumFerence)
         {
-            var radius = Math.Sqrt(Math.Pow(center.X - circumFerence.X, 2) + Math.Pow(center.Y - circumFerence.Y, 2));
+            var radius = GetDistance(center, circumFerence);
             DrawLogicCircle(g, pen, center, radius);
         }
 

@@ -5,14 +5,39 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarDriveSimulator
+namespace CarDriveSimulator.Models
 {
-    class ParkingModelExtension
+    /*
+     * 
+     * () <- Position
+     * ==================================================
+     * ||              ||      ^       ||              ||
+     * ||              ||      |       ||              ||
+     * ||              ||    Cube_W    ||              ||
+     * ||              ||      |       ||              ||
+     * ||              ||      v       ||              ||
+     * ||              ||<-  Cube_L  ->||              ||
+     * ==================================================
+     * 
+     */
+    class ParkingModel
+    {
+        public int Cube_L = 6000; // Or 2500
+        public int Cube_W = 2500; // Or 5000
+        public int Cube_Number = 10;
+
+        public Point Position = new Point(0, 0);
+        public double Angle = 90;
+
+        public PenModel Pen = new PenModel(Color.Black, 3);
+    }
+
+    class ParkingView
     {
         private ParkingModel Model { get; }
         private GeometryUtils GeometryUtils;
 
-        public ParkingModelExtension(ParkingModel model, GeometryUtils geometryUtils)
+        public ParkingView(ParkingModel model, GeometryUtils geometryUtils)
         {
             Model = model;
             GeometryUtils = geometryUtils;

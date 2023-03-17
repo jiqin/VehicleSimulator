@@ -27,6 +27,9 @@ namespace CarDriveSimulator
             CreateNewScenario();
 
             InitializeComponent();
+
+            checkBoxShowAxis1.Checked = controller.DisplayAxis1;
+            checkBoxShowAxis2.Checked = controller.DisplayAxis2;
         }
 
         private void ToolStripMenuItem_New_Click(object sender, EventArgs e)
@@ -93,13 +96,6 @@ namespace CarDriveSimulator
                     labelDebugInfo.Text = e.ToString();
                 }
             }
-        }
-
-        private void ToolStripMenuItem_AddVehicle_Click(object sender, EventArgs e)
-        {
-            controller.AddNewVehicle(new Point(0, 0));
-
-            pictureBoxDraw.Invalidate();
         }
 
         private void ToolStripMenuItem_Edit_Click(object sender, EventArgs e)
@@ -256,7 +252,7 @@ namespace CarDriveSimulator
                 lastKeyDownCount = 1;
             }
 
-            var speed = Math.Max(Math.Min(lastKeyDownCount, 5), 1);
+            var speed = Math.Max(Math.Min(lastKeyDownCount, 10), 1);
 
             var redraw = false;
             switch(e.KeyCode)
@@ -295,6 +291,42 @@ namespace CarDriveSimulator
             lastKeyDownCount = 0;
         }
 
-        
+        private void checkBoxShowAxis1_CheckedChanged(object sender, EventArgs e)
+        {
+            controller.DisplayAxis1 = checkBoxShowAxis1.Checked;
+            pictureBoxDraw.Invalidate();
+            this.Focus();
+        }
+
+        private void checkBoxShowAxis2_CheckedChanged(object sender, EventArgs e)
+        {
+            controller.DisplayAxis2 = checkBoxShowAxis2.Checked;
+            pictureBoxDraw.Invalidate();
+            this.Focus();
+        }
+
+        private void pictureBoxDraw_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                controller.AddNewTag(e.Location);
+            }
+        }
+
+        private void buttonAddCar_Click(object sender, EventArgs e)
+        {
+            controller.AddNewVehicle(new Point(0, 0));
+
+            pictureBoxDraw.Invalidate();
+            this.Focus();
+        }
+
+        private void buttonDeleteTag_Click(object sender, EventArgs e)
+        {
+            controller.RemoveSelectedTagModel();
+
+            pictureBoxDraw.Invalidate();
+            this.Focus();
+        }
     }
 }
