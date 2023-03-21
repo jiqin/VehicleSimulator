@@ -59,7 +59,7 @@ namespace CarDriveSimulator.Models
         public Point Position = new Point(0, 0);
         public double VehicleAngle = 90;    // Default towards to Up.
         public double WheelAngle = 0;
-        public double MaxWheelAngle = 30;
+        public double MaxWheelAngle = 37;
 
         // Draw Vehicle
         public PenModel PenBody = new PenModel(Color.Black, 5);
