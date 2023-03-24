@@ -1,2 +1,2 @@
 # VehicleSimulator
-Simulate driving a car, make new driver easy to familiar with driving.
+Simulate driving a car, make new driver familiar with driving easily.
