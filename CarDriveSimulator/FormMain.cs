@@ -30,6 +30,7 @@ namespace CarDriveSimulator
 
             checkBoxShowAxis1.Checked = controller.DisplayAxis1;
             checkBoxShowAxis2.Checked = controller.DisplayAxis2;
+            checkBoxShowCarGuidelineBody.Checked = true;
         }
 
         private void ToolStripMenuItem_New_Click(object sender, EventArgs e)
@@ -266,11 +267,11 @@ namespace CarDriveSimulator
                     redraw = true;
                     break;
                 case Keys.W:
-                    controller.DriveActiveVehicleModel(100 * speed, true);
+                    controller.DriveSelectedVehicleModel(100 * speed, true);
                     redraw = true;
                     break;
                 case Keys.S:
-                    controller.DriveActiveVehicleModel(100 * speed, false);
+                    controller.DriveSelectedVehicleModel(100 * speed, false);
                     redraw = true;
                     break;
                 default:
@@ -325,6 +326,30 @@ namespace CarDriveSimulator
         {
             controller.RemoveSelectedTagModel();
 
+            pictureBoxDraw.Invalidate();
+            this.Focus();
+        }
+
+        private void checkBoxShowCarGuidelineBody_CheckedChanged(object sender, EventArgs e)
+        {
+            controller.SetDisplayVehicleGuideLineBody(checkBoxShowCarGuidelineBody.Checked);
+
+            pictureBoxDraw.Invalidate();
+            this.Focus();
+        }
+
+        private void checkBoxShowCarGuidelineWheel_CheckedChanged(object sender, EventArgs e)
+        {
+            controller.SetDisplayVehicleGuideLineWheel(checkBoxShowCarGuidelineWheel.Checked);
+
+            pictureBoxDraw.Invalidate();
+            this.Focus();
+        }
+
+        private void checkBoxRecord_CheckedChanged(object sender, EventArgs e)
+        {
+            checkBoxRecord.Text = checkBoxRecord.Checked ? "In Recording" : "Recording";
+            controller.Record(checkBoxRecord.Checked);
             pictureBoxDraw.Invalidate();
             this.Focus();
         }

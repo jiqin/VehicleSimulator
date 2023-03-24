@@ -247,7 +247,7 @@ namespace CarDriveSimulator.Models
 
             // Draw Front Back Extionsion Line
             {
-                if (Model.FrontBackExtionsionLine_Draw)
+                if (IsDriveMode && Model.FrontBackExtionsionLine_Draw)
                 {
                     var pen = new Pen(Model.FrontBackExtionsionLine_Pen.Color, Model.FrontBackExtionsionLine_Pen.Width);
                     var body = BodyRelativePoints;
@@ -266,7 +266,7 @@ namespace CarDriveSimulator.Models
 
             // Draw turning radius
             {
-                if (Model.TurningRadius_Draw && Model.WheelAngle != 0)
+                if (IsDriveMode && Model.TurningRadius_Draw && Model.WheelAngle != 0)
                 {
                     var pen = new Pen(Model.TurningRadius_Pen.Color, Model.TurningRadius_Pen.Width);
 
@@ -290,7 +290,7 @@ namespace CarDriveSimulator.Models
 
             // Draw Guid lines
             {
-                if (Model.WheelAngle != 0)
+                if (IsDriveMode && Model.WheelAngle != 0)
                 {
                     if (Model.GuideLine_Body_Draw)
                     {
@@ -339,8 +339,6 @@ namespace CarDriveSimulator.Models
                 if (IsDriveMode)
                 {
                     Model.FrontBackExtionsionLine_Draw = true;
-                    Model.TurningRadius_Draw = true;
-                    Model.GuideLine_Body_Draw = true;
                 }
             }
             else
@@ -348,8 +346,6 @@ namespace CarDriveSimulator.Models
                 IsDriveMode = false;
                 Model.PenBody = new PenModel(Color.Black, 5);
                 Model.FrontBackExtionsionLine_Draw = false;
-                Model.TurningRadius_Draw = false;
-                Model.GuideLine_Body_Draw = false;
             }
         }
 
@@ -392,6 +388,16 @@ namespace CarDriveSimulator.Models
                 Model.Position = GeometryUtils.RotatePoint(RelativePointToLogic(or), Model.Position, angleDelta);
                 Model.VehicleAngle += angleDelta;
             }
+        }
+
+        public void SetDisplayGuideLineBody(bool display)
+        {
+            this.Model.GuideLine_Body_Draw = display;
+        }
+
+        public void SetDisplayGuideLineWheel(bool display)
+        {
+            this.Model.GuideLine_Wheel_Draw = display;
         }
     }
 }

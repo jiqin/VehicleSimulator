@@ -29,6 +29,10 @@ namespace CarDriveSimulator
         private List<TagView> tagViews;
         private TagView selectedTagView;
 
+        private bool inRecording = false;
+        private List<List<Point>> traceLines = new List<List<Point>>();
+        private PenModel penTraceLine = new PenModel(Color.YellowGreen, 3);
+
         private string filePathName;
 
         public GlobalController()
@@ -158,6 +162,9 @@ namespace CarDriveSimulator
                 {
                     this.selectedVehicleView = m;
                     this.selectedVehicleView.SetSelected(true, isDrive);
+
+                    AddWheelToTraceLines(selectedVehicleView);
+
                     return;
                 }
             }
@@ -206,16 +213,47 @@ namespace CarDriveSimulator
                 this.geometryUtils.OriginalPointInDevice = this.scenarioModel.OriginalPointInDevice;
                 this.geometryUtils.Scale = this.scenarioModel.Scale;
             }
+            else if (selectedVehicleView != null)
+            {
+                selectedVehicleView.Move(logicSize);
+                AddWheelToTraceLines(selectedVehicleView);
+            }
             else
             {
-                selectedVehicleView?.Move(logicSize);
                 selectedParkingView?.Move(logicSize);
             }
         }
 
-        public void DriveActiveVehicleModel(double logicDistance, bool moveForward)
+        public void DriveSelectedVehicleModel(double logicDistance, bool moveForward)
         {
-            selectedVehicleView?.Drive(logicDistance, moveForward);
+            if (selectedVehicleView != null)
+            {
+                selectedVehicleView.Drive(logicDistance, moveForward);
+                AddWheelToTraceLines(selectedVehicleView);
+            }
+        }
+
+        private void AddWheelToTraceLines(VehicleView m)
+        {
+            if (m == null || !m.IsDriveMode || !inRecording)
+            {
+                return;
+            }
+
+            var pos = m.BodyRelativePoints.Select(p => m.RelativePointToLogic(p)).ToList();
+            if (traceLines.Count > 0)
+            {
+                // In order not to show trace line too density.
+                if (geometryUtils.GetDistance(traceLines.LastOrDefault()[0], pos[0]) <= 300)
+                {
+                    return;
+                }
+            }
+            traceLines.Add(pos);
+            //for (var i = 0; i < 4; ++i)
+            //{
+            //    traceLines[traceLines.Count - 4 + i].Add(pos[i]);
+            //}
         }
 
         public void ScaleFromPoint(Point scaleAtDevicePt, bool increase)
@@ -271,15 +309,51 @@ namespace CarDriveSimulator
                 {
                     m.Draw(g);
                 }
+
+                DrawTraceline(g);
             }
 
             return cachedBitmap;
+        }
+
+        private void DrawTraceline(Graphics g)
+        {
+            var pen = new Pen(penTraceLine.Color, penTraceLine.Width);
+            foreach (var line in traceLines)
+            {
+                geometryUtils.DrawLogicLines(g, pen, line.ToArray(), true);
+            }
         }
 
         public void RotateSelectedModel(int angleDelta)
         {
             selectedVehicleView?.Rotate(angleDelta);
             selectedParkingView?.Rotate(angleDelta);
+        }
+
+        public void SetDisplayVehicleGuideLineBody(bool display)
+        {
+            foreach (var m in vehicleViews)
+            {
+                m.SetDisplayGuideLineBody(display);
+            }
+        }
+
+        public void SetDisplayVehicleGuideLineWheel(bool display)
+        {
+            foreach (var m in vehicleViews)
+            {
+                m.SetDisplayGuideLineWheel(display);
+            }
+        }
+
+        public void Record(bool record)
+        {
+            inRecording = record;
+            if (!inRecording)
+            {
+                traceLines.Clear();
+            }
         }
     }
 }

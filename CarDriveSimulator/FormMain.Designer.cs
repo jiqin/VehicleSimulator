@@ -40,10 +40,13 @@ namespace CarDriveSimulator
             this.panelDebugInfo = new System.Windows.Forms.Panel();
             this.labelDebugInfo = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.checkBoxShowCarGuidelineWheel = new System.Windows.Forms.CheckBox();
+            this.checkBoxShowCarGuidelineBody = new System.Windows.Forms.CheckBox();
             this.buttonDeleteTag = new System.Windows.Forms.Button();
             this.buttonAddCar = new System.Windows.Forms.Button();
             this.checkBoxShowAxis2 = new System.Windows.Forms.CheckBox();
             this.checkBoxShowAxis1 = new System.Windows.Forms.CheckBox();
+            this.checkBoxRecord = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.panelDraw.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxDraw)).BeginInit();
@@ -111,9 +114,9 @@ namespace CarDriveSimulator
             // 
             // pictureBoxDraw
             // 
-            this.pictureBoxDraw.Location = new System.Drawing.Point(3, 0);
+            this.pictureBoxDraw.Location = new System.Drawing.Point(143, 0);
             this.pictureBoxDraw.Name = "pictureBoxDraw";
-            this.pictureBoxDraw.Size = new System.Drawing.Size(1444, 866);
+            this.pictureBoxDraw.Size = new System.Drawing.Size(1304, 866);
             this.pictureBoxDraw.TabIndex = 0;
             this.pictureBoxDraw.TabStop = false;
             this.pictureBoxDraw.Click += new System.EventHandler(this.pictureBoxDraw_Click);
@@ -143,18 +146,43 @@ namespace CarDriveSimulator
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.checkBoxRecord);
+            this.panel1.Controls.Add(this.checkBoxShowCarGuidelineWheel);
+            this.panel1.Controls.Add(this.checkBoxShowCarGuidelineBody);
             this.panel1.Controls.Add(this.buttonDeleteTag);
             this.panel1.Controls.Add(this.buttonAddCar);
             this.panel1.Controls.Add(this.checkBoxShowAxis2);
             this.panel1.Controls.Add(this.checkBoxShowAxis1);
             this.panel1.Location = new System.Drawing.Point(0, 101);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(200, 867);
+            this.panel1.Size = new System.Drawing.Size(343, 867);
             this.panel1.TabIndex = 4;
+            // 
+            // checkBoxShowCarGuidelineWheel
+            // 
+            this.checkBoxShowCarGuidelineWheel.AutoSize = true;
+            this.checkBoxShowCarGuidelineWheel.Location = new System.Drawing.Point(22, 147);
+            this.checkBoxShowCarGuidelineWheel.Name = "checkBoxShowCarGuidelineWheel";
+            this.checkBoxShowCarGuidelineWheel.Size = new System.Drawing.Size(291, 36);
+            this.checkBoxShowCarGuidelineWheel.TabIndex = 6;
+            this.checkBoxShowCarGuidelineWheel.Text = "Car LeadingLine Wheel";
+            this.checkBoxShowCarGuidelineWheel.UseVisualStyleBackColor = true;
+            this.checkBoxShowCarGuidelineWheel.CheckedChanged += new System.EventHandler(this.checkBoxShowCarGuidelineWheel_CheckedChanged);
+            // 
+            // checkBoxShowCarGuidelineBody
+            // 
+            this.checkBoxShowCarGuidelineBody.AutoSize = true;
+            this.checkBoxShowCarGuidelineBody.Location = new System.Drawing.Point(22, 104);
+            this.checkBoxShowCarGuidelineBody.Name = "checkBoxShowCarGuidelineBody";
+            this.checkBoxShowCarGuidelineBody.Size = new System.Drawing.Size(277, 36);
+            this.checkBoxShowCarGuidelineBody.TabIndex = 5;
+            this.checkBoxShowCarGuidelineBody.Text = "Car LeadingLine Body";
+            this.checkBoxShowCarGuidelineBody.UseVisualStyleBackColor = true;
+            this.checkBoxShowCarGuidelineBody.CheckedChanged += new System.EventHandler(this.checkBoxShowCarGuidelineBody_CheckedChanged);
             // 
             // buttonDeleteTag
             // 
-            this.buttonDeleteTag.Location = new System.Drawing.Point(22, 183);
+            this.buttonDeleteTag.Location = new System.Drawing.Point(92, 330);
             this.buttonDeleteTag.Name = "buttonDeleteTag";
             this.buttonDeleteTag.Size = new System.Drawing.Size(150, 46);
             this.buttonDeleteTag.TabIndex = 4;
@@ -164,7 +192,7 @@ namespace CarDriveSimulator
             // 
             // buttonAddCar
             // 
-            this.buttonAddCar.Location = new System.Drawing.Point(22, 118);
+            this.buttonAddCar.Location = new System.Drawing.Point(92, 264);
             this.buttonAddCar.Name = "buttonAddCar";
             this.buttonAddCar.Size = new System.Drawing.Size(150, 46);
             this.buttonAddCar.TabIndex = 3;
@@ -193,6 +221,17 @@ namespace CarDriveSimulator
             this.checkBoxShowAxis1.Text = "Show Axis 1";
             this.checkBoxShowAxis1.UseVisualStyleBackColor = true;
             this.checkBoxShowAxis1.CheckedChanged += new System.EventHandler(this.checkBoxShowAxis1_CheckedChanged);
+            // 
+            // checkBoxRecord
+            // 
+            this.checkBoxRecord.AutoSize = true;
+            this.checkBoxRecord.Location = new System.Drawing.Point(22, 200);
+            this.checkBoxRecord.Name = "checkBoxRecord";
+            this.checkBoxRecord.Size = new System.Drawing.Size(208, 36);
+            this.checkBoxRecord.TabIndex = 8;
+            this.checkBoxRecord.Text = "Start Recording";
+            this.checkBoxRecord.UseVisualStyleBackColor = true;
+            this.checkBoxRecord.CheckedChanged += new System.EventHandler(this.checkBoxRecord_CheckedChanged);
             // 
             // FormMain
             // 
@@ -243,6 +282,9 @@ namespace CarDriveSimulator
         private System.Windows.Forms.CheckBox checkBoxShowAxis1;
         private System.Windows.Forms.Button buttonAddCar;
         private System.Windows.Forms.Button buttonDeleteTag;
+        private System.Windows.Forms.CheckBox checkBoxShowCarGuidelineBody;
+        private System.Windows.Forms.CheckBox checkBoxShowCarGuidelineWheel;
+        private System.Windows.Forms.CheckBox checkBoxRecord;
     }
 }
 
