@@ -29,9 +29,13 @@ namespace CarDriveSimulator
         private List<TagView> tagViews;
         private TagView selectedTagView;
 
-        private bool inRecording = false;
-        private List<List<Point>> traceLines = new List<List<Point>>();
-        private PenModel penTraceLine = new PenModel(Color.YellowGreen, 3);
+        private bool inRecordingBodyTrace = false;
+        private List<List<Point>> bodyTraceLines = new List<List<Point>>();
+        private PenModel penBodyTraceLine = new PenModel(Color.YellowGreen, 3);
+
+        private bool inRecordingWheelTrace = false;
+        private List<List<Point>> wheelTraceLines = new List<List<Point>>();
+        private PenModel penWheelTraceLine = new PenModel(Color.OrangeRed, 3);
 
         private string filePathName;
 
@@ -160,10 +164,13 @@ namespace CarDriveSimulator
             {
                 if (m.IsSelected(logicPt))
                 {
-                    this.selectedVehicleView = m;
-                    this.selectedVehicleView.SetSelected(true, isDrive);
+                    if (this.selectedVehicleView != m)
+                    {
+                        this.selectedVehicleView = m;
+                        this.selectedVehicleView.SetSelected(true, isDrive);
 
-                    AddWheelToTraceLines(selectedVehicleView);
+                        AddWheelToTraceLines(selectedVehicleView, true);
+                    }
 
                     return;
                 }
@@ -216,7 +223,7 @@ namespace CarDriveSimulator
             else if (selectedVehicleView != null)
             {
                 selectedVehicleView.Move(logicSize);
-                AddWheelToTraceLines(selectedVehicleView);
+                AddWheelToTraceLines(selectedVehicleView, false);
             }
             else
             {
@@ -229,31 +236,67 @@ namespace CarDriveSimulator
             if (selectedVehicleView != null)
             {
                 selectedVehicleView.Drive(logicDistance, moveForward);
-                AddWheelToTraceLines(selectedVehicleView);
+                AddWheelToTraceLines(selectedVehicleView, false);
             }
         }
 
-        private void AddWheelToTraceLines(VehicleView m)
+        private void AddWheelToTraceLines(VehicleView m, bool isNewSelectedVehicle)
         {
-            if (m == null || !m.IsDriveMode || !inRecording)
+            if (m == null || !m.IsDriveMode)
             {
                 return;
             }
 
-            var pos = m.BodyRelativePoints.Select(p => m.RelativePointToLogic(p)).ToList();
-            if (traceLines.Count > 0)
+            Action f1 = () =>
             {
-                // In order not to show trace line too density.
-                if (geometryUtils.GetDistance(traceLines.LastOrDefault()[0], pos[0]) <= 300)
+                if (!inRecordingBodyTrace)
                 {
                     return;
                 }
-            }
-            traceLines.Add(pos);
-            //for (var i = 0; i < 4; ++i)
-            //{
-            //    traceLines[traceLines.Count - 4 + i].Add(pos[i]);
-            //}
+
+                var pos = m.BodyRelativePoints.Select(p => m.RelativePointToLogic(p)).ToList();
+                if (bodyTraceLines.Count > 0)
+                {
+                    // In order not to show trace line too density.
+                    if (geometryUtils.GetDistance(bodyTraceLines.LastOrDefault()[0], pos[0]) <= 300)
+                    {
+                        return;
+                    }
+                }
+                bodyTraceLines.Add(pos);
+            };
+            f1();
+
+            Action f2 = () => {
+                if (!inRecordingWheelTrace)
+                {
+                    return;
+                }
+
+                var pos = m.WheelRelativePositions.Select(p => m.RelativePointToLogic(p)).ToList();
+                if (wheelTraceLines.Count > 0)
+                {
+                    // In order not to show trace line too density.
+                    if (geometryUtils.GetDistance(wheelTraceLines.LastOrDefault()[0], pos[0]) <= 300)
+                    {
+                        return;
+                    }
+                }
+
+                if (isNewSelectedVehicle)
+                {
+                    for (var i = 0; i < pos.Count; ++i)
+                    {
+                        wheelTraceLines.Add(new List<Point>());
+                    }
+                    
+                }
+                for (var i = 0; i < pos.Count; ++i)
+                {
+                    wheelTraceLines[wheelTraceLines.Count - pos.Count + i].Add(pos[i]);
+                }
+            };
+            f2();
         }
 
         public void ScaleFromPoint(Point scaleAtDevicePt, bool increase)
@@ -318,11 +361,17 @@ namespace CarDriveSimulator
 
         private void DrawTraceline(Graphics g)
         {
-            var pen = new Pen(penTraceLine.Color, penTraceLine.Width);
-            foreach (var line in traceLines)
+            Action<PenModel, List<List<Point>>, bool> DrawTraceLine = (penModel, tracelines, enclose) =>
             {
-                geometryUtils.DrawLogicLines(g, pen, line.ToArray(), true);
-            }
+                var pen = new Pen(penModel.Color, penModel.Width);
+                foreach (var line in tracelines)
+                {
+                    geometryUtils.DrawLogicLines(g, pen, line.ToArray(), enclose);
+                }
+            };
+
+            DrawTraceLine(penBodyTraceLine, bodyTraceLines, true);
+            DrawTraceLine(penWheelTraceLine, wheelTraceLines, false);
         }
 
         public void RotateSelectedModel(int angleDelta)
@@ -331,7 +380,7 @@ namespace CarDriveSimulator
             selectedParkingView?.Rotate(angleDelta);
         }
 
-        public void SetDisplayVehicleGuideLineBody(bool display)
+        public void SetDisplayVehicleGuideLineBody(bool[] display)
         {
             foreach (var m in vehicleViews)
             {
@@ -339,7 +388,7 @@ namespace CarDriveSimulator
             }
         }
 
-        public void SetDisplayVehicleGuideLineWheel(bool display)
+        public void SetDisplayVehicleGuideLineWheel(bool[] display)
         {
             foreach (var m in vehicleViews)
             {
@@ -347,12 +396,21 @@ namespace CarDriveSimulator
             }
         }
 
-        public void Record(bool record)
+        public void RecordBodyTrace(bool record)
         {
-            inRecording = record;
-            if (!inRecording)
+            inRecordingBodyTrace = record;
+            if (!inRecordingBodyTrace)
             {
-                traceLines.Clear();
+                bodyTraceLines.Clear();
+            }
+        }
+
+        public void RecordWheelTrace(bool record)
+        {
+            inRecordingWheelTrace = record;
+            if (!inRecordingWheelTrace)
+            {
+                wheelTraceLines.Clear();
             }
         }
     }

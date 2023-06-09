@@ -73,10 +73,10 @@ namespace CarDriveSimulator.Models
         public bool TurningRadius_Draw = false;
         public PenModel TurningRadius_Pen = new PenModel(Color.Yellow, 5);
 
-        public bool GuideLine_Body_Draw = false;
+        public bool[] GuideLine_Body_Draws = new[] { false, false, false, false };
         public PenModel GuideLine_Body_Pen = new PenModel(Color.Green, 2);
 
-        public bool GuideLine_Wheel_Draw = false;
+        public bool[] GuideLine_Wheel_Draws = new[] { false, false, false, false };
         public PenModel GuideLine_Wheel_Pen = new PenModel(Color.Red, 2);
     }
 
@@ -292,25 +292,31 @@ namespace CarDriveSimulator.Models
             {
                 if (IsDriveMode && Model.WheelAngle != 0)
                 {
-                    if (Model.GuideLine_Body_Draw)
                     {
                         var pen = new Pen(Model.GuideLine_Body_Pen.Color, Model.GuideLine_Body_Pen.Width);
 
                         var body = BodyRelativePoints;
-                        foreach (Point pt in body)
+                        for (var i = 0; i < body.Length; ++i)
                         {
-                            GeometryUtils.DrawLogicCircle(g, pen, RelativePointToLogic(TurningRadius_RelativePoint), RelativePointToLogic(pt));
+                            Point pt = body[i];
+                            if (Model.GuideLine_Body_Draws[i])
+                            {
+                                GeometryUtils.DrawLogicCircle(g, pen, RelativePointToLogic(TurningRadius_RelativePoint), RelativePointToLogic(pt));
+                            }
                         }
                     }
 
-                    if (Model.GuideLine_Wheel_Draw)
                     {
                         var pen = new Pen(Model.GuideLine_Wheel_Pen.Color, Model.GuideLine_Wheel_Pen.Width);
 
                         var wheelPositions = WheelRelativePositions;
-                        foreach (Point pt in wheelPositions)
+                        for (var i = 0; i < wheelPositions.Length; ++i)
                         {
-                            GeometryUtils.DrawLogicCircle(g, pen, RelativePointToLogic(TurningRadius_RelativePoint), RelativePointToLogic(pt));
+                            Point pt = wheelPositions[i];
+                            if (Model.GuideLine_Wheel_Draws[i])
+                            {
+                                GeometryUtils.DrawLogicCircle(g, pen, RelativePointToLogic(TurningRadius_RelativePoint), RelativePointToLogic(pt));
+                            }
                         }
                     }
                 }
@@ -390,14 +396,14 @@ namespace CarDriveSimulator.Models
             }
         }
 
-        public void SetDisplayGuideLineBody(bool display)
+        public void SetDisplayGuideLineBody(bool[] display)
         {
-            this.Model.GuideLine_Body_Draw = display;
+            this.Model.GuideLine_Body_Draws = display;
         }
 
-        public void SetDisplayGuideLineWheel(bool display)
+        public void SetDisplayGuideLineWheel(bool[] display)
         {
-            this.Model.GuideLine_Wheel_Draw = display;
+            this.Model.GuideLine_Wheel_Draws = display;
         }
     }
 }

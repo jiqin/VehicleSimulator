@@ -332,7 +332,43 @@ namespace CarDriveSimulator
 
         private void checkBoxShowCarGuidelineBody_CheckedChanged(object sender, EventArgs e)
         {
-            controller.SetDisplayVehicleGuideLineBody(checkBoxShowCarGuidelineBody.Checked);
+            checkBoxShowCarGuidelineBody_1.Checked = checkBoxShowCarGuidelineBody.Checked;
+            checkBoxShowCarGuidelineBody_2.Checked = checkBoxShowCarGuidelineBody.Checked;
+            checkBoxShowCarGuidelineBody_3.Checked = checkBoxShowCarGuidelineBody.Checked;
+            checkBoxShowCarGuidelineBody_4.Checked = checkBoxShowCarGuidelineBody.Checked;
+
+            SetDisplayVehicleGuideLineBody();
+        }
+
+        private void checkBoxShowCarGuidelineBody_1_CheckedChanged(object sender, EventArgs e)
+        {
+            SetDisplayVehicleGuideLineBody();
+        }
+
+        private void checkBoxShowCarGuidelineBody_2_CheckedChanged(object sender, EventArgs e)
+        {
+            SetDisplayVehicleGuideLineBody();
+        }
+
+        private void checkBoxShowCarGuidelineBody_3_CheckedChanged(object sender, EventArgs e)
+        {
+            SetDisplayVehicleGuideLineBody();
+        }
+
+        private void checkBoxShowCarGuidelineBody_4_CheckedChanged(object sender, EventArgs e)
+        {
+            SetDisplayVehicleGuideLineBody();
+        }
+
+        private void SetDisplayVehicleGuideLineBody()
+        {
+            controller.SetDisplayVehicleGuideLineBody(
+                new[]{
+                    checkBoxShowCarGuidelineBody_1.Checked,
+                    checkBoxShowCarGuidelineBody_2.Checked,
+                    checkBoxShowCarGuidelineBody_3.Checked,
+                    checkBoxShowCarGuidelineBody_4.Checked
+                    });
 
             pictureBoxDraw.Invalidate();
             this.Focus();
@@ -340,18 +376,64 @@ namespace CarDriveSimulator
 
         private void checkBoxShowCarGuidelineWheel_CheckedChanged(object sender, EventArgs e)
         {
-            controller.SetDisplayVehicleGuideLineWheel(checkBoxShowCarGuidelineWheel.Checked);
+            checkBoxShowCarGuidelineWheel_1.Checked = checkBoxShowCarGuidelineWheel.Checked;
+            checkBoxShowCarGuidelineWheel_2.Checked = checkBoxShowCarGuidelineWheel.Checked;
+            checkBoxShowCarGuidelineWheel_3.Checked = checkBoxShowCarGuidelineWheel.Checked;
+            checkBoxShowCarGuidelineWheel_4.Checked = checkBoxShowCarGuidelineWheel.Checked;
 
-            pictureBoxDraw.Invalidate();
-            this.Focus();
+            SetDisplayVehicleGuideLineWheel();
         }
 
-        private void checkBoxRecord_CheckedChanged(object sender, EventArgs e)
+        private void checkBoxShowCarGuidelineWheel_1_CheckedChanged(object sender, EventArgs e)
         {
-            checkBoxRecord.Text = checkBoxRecord.Checked ? "In Recording" : "Recording";
-            controller.Record(checkBoxRecord.Checked);
+            SetDisplayVehicleGuideLineWheel();
+        }
+
+        private void checkBoxShowCarGuidelineWheel_2_CheckedChanged(object sender, EventArgs e)
+        {
+            SetDisplayVehicleGuideLineWheel();
+        }
+
+        private void checkBoxShowCarGuidelineWheel_3_CheckedChanged(object sender, EventArgs e)
+        {
+            SetDisplayVehicleGuideLineWheel();
+        }
+
+        private void checkBoxShowCarGuidelineWheel_4_CheckedChanged(object sender, EventArgs e)
+        {
+            SetDisplayVehicleGuideLineWheel();
+        }
+
+        private void SetDisplayVehicleGuideLineWheel()
+        {
+            controller.SetDisplayVehicleGuideLineWheel(
+                new[] {
+                    checkBoxShowCarGuidelineWheel_1.Checked,
+                    checkBoxShowCarGuidelineWheel_2.Checked,
+                    checkBoxShowCarGuidelineWheel_3.Checked,
+                    checkBoxShowCarGuidelineWheel_4.Checked,
+                });
+
             pictureBoxDraw.Invalidate();
             this.Focus();
         }
+
+        private void checkBoxRecordBodyTrace_CheckedChanged(object sender, EventArgs e)
+        {
+            controller.RecordBodyTrace(checkBoxRecordBodyTrace.Checked);
+            pictureBoxDraw.Invalidate();
+            this.Focus();
+        }
+
+        private void checkBoxRecordWheelTrace_CheckedChanged(object sender, EventArgs e)
+        {
+            controller.RecordWheelTrace(checkBoxRecordWheelTrace.Checked);
+            pictureBoxDraw.Invalidate();
+            this.Focus();
+        }
+
+        
+
+        
     }
 }
